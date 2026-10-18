@@ -1,5 +1,5 @@
 // Builds the confirmation, welcome and update emails.
-import { confirmMail } from "./content.ts";
+import { confirmMail, updateMail, welcomeMail } from "./content.ts";
 import { renderMail, type MailLinks, type RenderedMail } from "./layout.ts";
 
 type SiteLinks = Omit<MailLinks, "unsubscribe">;
@@ -31,5 +31,45 @@ export function buildConfirmMail(
     ],
     signoff: confirmMail.signoff,
     links: { ...links, unsubscribe: null },
+  });
+}
+
+export function buildWelcomeMail(
+  greeting: string,
+  unsubscribeUrl: string,
+  links: SiteLinks,
+): RenderedMail {
+  return renderMail({
+    subject: welcomeMail.subject,
+    preview: welcomeMail.body,
+    title: welcomeMail.title,
+    greeting,
+    blocks: [{ kind: "paragraph", text: welcomeMail.body }],
+    signoff: welcomeMail.signoff,
+    links: { ...links, unsubscribe: unsubscribeUrl },
+  });
+}
+
+const brevoPlaceholders = {
+  greeting: "{{ contact.GREETING }}",
+  unsubscribe: "{{ unsubscribe }}",
+} as const;
+
+export function buildUpdateTemplate(links: SiteLinks): RenderedMail {
+  const [shipped, broke, next] = updateMail.sections;
+  return renderMail({
+    eyebrow: updateMail.eyebrow,
+    subject: updateMail.subject,
+    preview: updateMail.intro,
+    title: updateMail.title,
+    greeting: brevoPlaceholders.greeting,
+    blocks: [
+      { kind: "paragraph", text: updateMail.intro },
+      { kind: "section", label: shipped, text: updateMail.shippedPlaceholder },
+      { kind: "section", label: broke, text: updateMail.brokePlaceholder },
+      { kind: "section", label: next, text: `${updateMail.nextPlaceholder} ${updateMail.closing}` },
+    ],
+    signoff: updateMail.signoff,
+    links: { ...links, unsubscribe: brevoPlaceholders.unsubscribe },
   });
 }

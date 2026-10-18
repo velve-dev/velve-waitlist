@@ -85,9 +85,6 @@ export function readConfig(env: Env): Config {
   const tokenKey = Buffer.from(text("TOKEN_KEY"), "base64");
   if (tokenKey.length !== 32 && !invalid.includes("TOKEN_KEY")) invalid.push("TOKEN_KEY");
 
-  const umamiUrl = env.UMAMI_URL?.trim() ?? "";
-  const umamiWebsiteId = env.UMAMI_WEBSITE_ID?.trim() ?? "";
-
   const config: Config = {
     siteUrl: httpsUrl("SITE_URL"),
     siteIndexable: env.SITE_INDEXABLE?.trim() === "true",
@@ -116,16 +113,19 @@ export function readConfig(env: Env): Config {
       webhookWindowSeconds: positiveNumber("WEBHOOK_LIMIT_WINDOW_SECONDS", 60),
       confirmTokenTtlSeconds: positiveNumber("CONFIRM_TOKEN_TTL_SECONDS", 604_800),
     },
-    umami:
-      umamiUrl !== "" && umamiWebsiteId !== ""
-        ? { url: umamiUrl.replace(/\/+$/, ""), websiteId: umamiWebsiteId }
-        : null,
+    umami: readUmami(env),
   };
 
   if (config.brevo.listId === 0 && !invalid.includes("BREVO_LIST_ID"))
     invalid.push("BREVO_LIST_ID");
   if (invalid.length > 0) throw new ConfigError(invalid);
   return config;
+}
+
+export function readUmami(env: Env): Config["umami"] {
+  const url = env.UMAMI_URL?.trim() ?? "";
+  const websiteId = env.UMAMI_WEBSITE_ID?.trim() ?? "";
+  return url !== "" && websiteId !== "" ? { url: url.replace(/\/+$/, ""), websiteId } : null;
 }
 
 let cached: Config | null = null;

@@ -64,12 +64,14 @@ function findDriftedCopy(): string[] {
   const approved = JSON.parse(
     readFileSync(path.join(import.meta.dirname, "approved-copy.json"), "utf8"),
   ) as string[];
-  const copySource = readFileSync(path.join(root, "src/content/copy.ts"), "utf8");
+  const copySource = ["src/content/copy.ts", "emails/content.ts"]
+    .map((file) => path.join(root, file))
+    .filter((file) => existsSync(file))
+    .map((file) => readFileSync(file, "utf8"))
+    .join("\n");
   return approved
     .filter((text) => !copySource.includes(JSON.stringify(text)))
-    .map(
-      (text) => `src/content/copy.ts: approved string missing or changed: ${JSON.stringify(text)}`,
-    );
+    .map((text) => `approved string missing or changed in the copy files: ${JSON.stringify(text)}`);
 }
 
 const problems = [...findForbiddenPhrases(), ...findDriftedCopy()];

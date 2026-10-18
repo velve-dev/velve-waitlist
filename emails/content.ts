@@ -19,3 +19,22 @@ export const confirmMail = {
   note: "Not you? Ignore this and nothing happens.",
   signoff: "See you soon,",
 } as const;
+export const welcomeMail = {
+  subject: "You're on the Velve waitlist",
+  title: "You're in",
+  body: "thanks for confirming. Every few weeks you'll get what we shipped, what broke and what's next. Countdowns and last chances aren't our thing.",
+  signoff: "Stay tuned and see you soon,",
+} as const;
+
+export const updateMail = {
+  subject: "Velve update {n} · {title}",
+  eyebrow: "update {n} · {month year}",
+  title: "{title}",
+  intro: "here's where Velve stands.",
+  sections: ["shipped", "broke", "next"],
+  shippedPlaceholder: "[What we shipped since the last update.]",
+  brokePlaceholder: "[What didn't work since the last update, in two sentences.]",
+  nextPlaceholder: "[What we're building before the next update.]",
+  closing: "Questions? Hit reply, a human reads it.",
+  signoff: "Stay tuned,",
+} as const;

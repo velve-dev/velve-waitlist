@@ -5,7 +5,7 @@ type Umami = { track: (build: (payload: UmamiPayload) => UmamiPayload) => unknow
 
 const tokenRoutes = ["/confirm/", "/unsubscribe/"];
 
-function publicPath(pathname: string): string {
+export function publicPath(pathname: string): string {
   const tokenRoute = tokenRoutes.find((prefix) => pathname.startsWith(prefix));
   return tokenRoute === undefined ? pathname : tokenRoute.slice(0, -1);
 }
@@ -23,6 +23,24 @@ function send(extra: UmamiPayload) {
   }));
 }
 
+export function trackPageView() {
+  send({});
+}
+
 export function trackEvent(name: AnalyticsEvent) {
   send({ name });
+}
+
+export function whenTrackerReady(run: () => void): () => void {
+  let attempts = 0;
+  const timer = window.setInterval(() => {
+    attempts += 1;
+    if (tracker() !== undefined) {
+      window.clearInterval(timer);
+      run();
+    } else if (attempts > 50) {
+      window.clearInterval(timer);
+    }
+  }, 100);
+  return () => window.clearInterval(timer);
 }

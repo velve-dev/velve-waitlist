@@ -65,3 +65,52 @@ export const submitted = {
   body: "Click the link we've sent to {email}. Typo?",
   typo: "Typo?",
 } as const;
+
+export const confirmed = {
+  titleWithName: "You're in, {name}",
+  title: "You're in",
+  body: "First update in a few weeks. Until then the build happens in public.",
+  threads: "Threads ↗",
+  github: "GitHub ↗",
+} as const;
+
+export const alreadyIn = {
+  title: "You're already in",
+  body: "Clicking twice won't get you in faster, but we like the enthusiasm.",
+} as const;
+
+export const unsubscribe = {
+  title: "Leaving before the good part?",
+  body: "Velve hasn't even launched yet. Leave now and you'll miss the email where it does.",
+  confirm: "Unsubscribe",
+  stay: "Fine, I'll stay",
+} as const;
+
+export const unsubscribed = {
+  title: "You're off the list",
+  body: "No hard feelings. Your address is deleted, and the door stays open if you change your mind.",
+  back: "Back to velve.dev",
+} as const;
+
+export const brokenUnsubscribeLink = {
+  title: "This link doesn't work",
+  body: "It may be old or cut off by your email app. Write to hello@velve.dev and we take you off by hand.",
+} as const;
+
+export const brokenConfirmLink = {
+  title: "This link doesn't work",
+  body: "It may be old or cut off by your email app. Sign up again and we'll send a fresh one.",
+} as const;
+
+export const notFound = {
+  eyebrow: "404 · not found",
+  title: "Nothing lives here",
+  body: "Like a region you never picked, this page holds nothing. Maybe it moved, maybe it never existed.",
+  back: "Back to velve.dev",
+} as const;
+
+export const serverError = {
+  title: "Something broke on our side",
+  body: "Not your fault. Try again in a minute.",
+  back: "Back to velve.dev",
+} as const;

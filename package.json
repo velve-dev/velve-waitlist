@@ -21,7 +21,10 @@
     "copy:lint": "node scripts/copy-lint.ts",
     "comments:lint": "node scripts/comments-lint.ts",
     "secrets:lint": "node scripts/secrets-lint.ts",
-    "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm comments:lint && pnpm secrets:lint && pnpm copy:lint && pnpm test && pnpm build && pnpm e2e"
+    "emails:check": "node scripts/emails-check.ts",
+    "emails:build": "node scripts/emails-check.ts --write",
+    "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm comments:lint && pnpm secrets:lint && pnpm copy:lint && pnpm test && pnpm emails:check && pnpm build && pnpm e2e",
+    "assets:build": "node scripts/render-assets.ts"
   },
   "dependencies": {
     "lucide-react": "1.52.0",

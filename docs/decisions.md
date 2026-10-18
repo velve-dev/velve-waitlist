@@ -44,3 +44,40 @@ The page embeds an encrypted timestamp issued at render time. The server rejects
 **Status:** accepted, 2026-10-18
 
 The app sits behind exactly one Traefik hop, which appends the address it saw. Earlier entries can be forged by the client, so the limiter uses the last one, falling back to `X-Real-IP`. The address is never stored or logged: limiter keys are an HMAC of the address with a salt derived per UTC day from `RATE_LIMIT_SALT_SECRET`. The per-address mail interval uses a stable HMAC instead, because a daily salt would reset it at midnight.
+
+## ADR 7: Confirm on GET, check membership first
+
+**Status:** accepted, 2026-10-18
+
+The brief asks `GET /confirm/<token>` to create the contact. Mail scanners in some corporate inboxes fetch links before the person does, which would confirm on their behalf. A button on the confirmation page would avoid that but adds a step the design does not have. The page keeps the brief's behaviour and records the risk here. The token still proves the address received our mail, and nothing is written for broken, expired or tampered tokens. The page asks Brevo whether the address is already listed before writing, which is how "You're already in" can be told apart from "You're in". Brevo dates are day precision (`yyyy-mm-dd`), as its API requires.
+
+## ADR 8: Unsubscribing always deletes, whichever path it takes
+
+**Status:** accepted, 2026-10-18
+
+"Your address is deleted" must stay true. There are four ways out:
+
+- Our link in the welcome mail opens `/unsubscribe/<token>`, and the button deletes the contact through the Brevo API.
+- `POST /api/unsubscribe/<token>` deletes without a question, for RFC 8058 one-click requests.
+- Brevo campaigns cannot use our own link. Brevo's documentation says so explicitly and adds its own link if one is missing. Brevo's custom unsubscribe page redirects to `/unsubscribed`, and a Brevo webhook for `unsubscribe` events calls `/api/webhooks/brevo`, which deletes the contact. Brevo would otherwise only block it.
+- Brevo adds a `List-Unsubscribe` header to transactional mails as well, and its API refuses standard headers, so we cannot point that header at our endpoint. The transactional webhook for `unsubscribed` events goes to the same endpoint.
+
+The webhook authenticates with a bearer token in Brevo's `auth` setting, compared in constant time. Brevo documents no request signatures. The mail test before launch must confirm where Brevo's `List-Unsubscribe` header points.
+
+## ADR 9: Serve the email logo from our own origin
+
+**Status:** accepted, 2026-10-18
+
+Mail clients do not render SVG and block data URIs, so the 24 px logo is a PNG at `https://velve.dev/email/logo-mark.png`. It is the same static file for every recipient, so loading it cannot tell us who opened what. No other image appears in any mail. The images are rendered by `pnpm assets:build` from the logo mark.
+
+## ADR 10: Relay Umami through our origin without client addresses
+
+**Status:** accepted, 2026-10-18
+
+The browser loads `/stats/script.js` and posts events to `/stats/api/send` on our own origin, so it never talks to another host. The server forwards events to the internal Umami URL with the user agent only, never the client address. Automatic tracking is off. The page sends page views and the two events itself, and replaces `/confirm/<token>` and `/unsubscribe/<token>` with `/confirm` and `/unsubscribe`, so link tokens never reach analytics. Browsers that send Do Not Track are not counted. Without `UMAMI_URL` and `UMAMI_WEBSITE_ID` no script is rendered and both routes answer 404.
+
+## ADR 11: Limit link routes in the proxy
+
+**Status:** accepted, 2026-10-18
+
+Confirmation and unsubscribe pages render on the server, and a page cannot answer 429. The Next.js proxy counts requests to `/confirm`, `/unsubscribe`, `/api/unsubscribe` and `/api/webhooks` per network, with its own limits, and answers 429 with `Retry-After` and the approved rate-limit sentence as plain text.
