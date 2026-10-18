@@ -15,6 +15,7 @@ export type MockState = {
   contacts: Map<string, { listIds: number[]; attributes: Record<string, unknown> }>;
   umamiEvents: unknown[];
   failNext: number;
+  failMatching: string | null;
   requests: { method: string; path: string }[];
 };
 
@@ -27,7 +28,7 @@ const fakeTracker = `(() => {
   window.umami = {
     track(build) {
       const payload = build({ website, hostname: location.hostname, language: navigator.language, screen: "0x0", title: document.title, url: location.pathname, referrer: document.referrer });
-      fetch(host + "/api/send", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ type: "event", payload }) });
+      fetch(host + "/api/send", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ type: "event", payload }) }).then((response) => response.text());
     },
   };
 })();`;
@@ -85,6 +86,7 @@ async function route(state: MockState, request: IncomingMessage, response: Serve
   }
   if (url.pathname === "/__mock/fail") {
     state.failNext = Number(url.searchParams.get("count") ?? "1");
+    state.failMatching = url.searchParams.get("matching");
     send(response, 200, { ok: true });
     return;
   }
@@ -92,7 +94,11 @@ async function route(state: MockState, request: IncomingMessage, response: Serve
   state.requests.push({ method, path: url.pathname });
   if (request.headers["api-key"] !== mockApiKey)
     return send(response, 401, { code: "unauthorized" });
-  if (state.failNext > 0) {
+  const matchesFailure =
+    state.failMatching === null ||
+    decodeURIComponent(url.pathname).includes(state.failMatching) ||
+    raw.includes(state.failMatching);
+  if (state.failNext > 0 && matchesFailure) {
     state.failNext -= 1;
     return send(response, 503, { code: "unavailable" });
   }
@@ -154,6 +160,7 @@ export function startBrevoMock(port: number): Promise<{ server: Server; state: M
     contacts: new Map(),
     umamiEvents: [],
     failNext: 0,
+    failMatching: null,
     requests: [],
   };
   const server = createServer((request, response) => {

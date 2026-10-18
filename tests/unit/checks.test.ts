@@ -13,6 +13,7 @@ function sandbox(files: Record<string, string>): string {
   sandboxes.push(directory);
   mkdirSync(path.join(directory, "src/content"), { recursive: true });
   cpSync(path.join(repoRoot, "src/content/copy.ts"), path.join(directory, "src/content/copy.ts"));
+  cpSync(path.join(repoRoot, "src/content/legal.ts"), path.join(directory, "src/content/legal.ts"));
   mkdirSync(path.join(directory, "emails"), { recursive: true });
   cpSync(path.join(repoRoot, "emails/content.ts"), path.join(directory, "emails/content.ts"));
   for (const [file, content] of Object.entries(files)) {

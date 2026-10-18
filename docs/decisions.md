@@ -87,3 +87,21 @@ Confirmation and unsubscribe pages render on the server, and a page cannot answe
 **Status:** accepted, 2026-10-18
 
 Extends ADR 6. One IPv6 customer usually holds a whole /64, so a limiter keyed on single IPv6 addresses could be sidestepped by rotating the host part. The limiter keys IPv6 clients on their /64 prefix and IPv4-mapped IPv6 addresses on the IPv4 address. The per-address mail interval keys on the mailbox: a `+tag` is dropped, and for Gmail the dots and the `googlemail.com` alias as well, so one inbox cannot be flooded through spelling variants. The mail itself still goes to the address as typed. The request body is read as a stream and abandoned once it passes 4 KiB, so an oversized body costs nothing.
+
+## ADR 13: A nonce-based content security policy on every page
+
+**Status:** accepted, 2026-10-18
+
+The Next.js proxy creates a fresh nonce per request and sends `script-src 'self' 'nonce-…' 'strict-dynamic'`, `style-src 'self' 'nonce-…'`, `connect-src 'self'`, `img-src 'self' data:`, `font-src 'self'`, `object-src 'none'`, `base-uri 'none'`, `form-action 'self'` and `frame-ancestors 'none'`, plus `upgrade-insecure-requests` when `SITE_URL` is https. There is no `unsafe-inline` and, outside development, no `unsafe-eval`. Every page therefore renders per request, which costs nothing at this size. API, analytics and static responses get `default-src 'none'`. All responses carry `Referrer-Policy: no-referrer`, a restrictive `Permissions-Policy`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, the cross-origin isolation headers and HSTS without subdomains, so Brevo's tracking subdomain is not forced into anything. The end-to-end suite fails if a page triggers a policy violation.
+
+## ADR 14: Search engines stay out until the legal review is done
+
+**Status:** accepted, 2026-10-18
+
+`SITE_INDEXABLE` decides at runtime, because Dokploy sets the environment after the image is built. The open legal review points live in `pendingLegalReview` in `src/content/legal.ts`, each starting with `[TODO]`. The site stays `noindex` (meta tag, `X-Robots-Tag` and `robots.txt`) as long as that list is not empty, even when `SITE_INDEXABLE=true`. The build also fails when `SITE_INDEXABLE=true` is set at build time and the file still contains `[TODO`. The markers are kept out of the rendered text so the published imprint and privacy pages stay word for word as approved.
+
+## ADR 15: Health without dependencies, detail behind a token
+
+**Status:** accepted, 2026-10-18
+
+`GET /api/health` answers 200 with `status`, `service` and `timestamp` and touches nothing else, so the container health check never flaps with Brevo. `GET /api/health/detailed` needs `Authorization: Bearer <HEALTH_TOKEN>`, checks the configuration and that the Brevo list is reachable within 2 seconds, and reports `ok`, `degraded` (200) or `error` (503 for an invalid configuration). It names no host, key or upstream.

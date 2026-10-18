@@ -4,12 +4,10 @@ import { randomBytes } from "node:crypto";
 import { cpSync, existsSync } from "node:fs";
 import path from "node:path";
 import { mockApiKey, startBrevoMock } from "../tests/support/brevo-mock.ts";
-import { e2eHealthToken, e2eWebhookSecret } from "../tests/support/e2e-env.ts";
+import { appPort, e2eHealthToken, e2eWebhookSecret, mockPort } from "../tests/support/e2e-env.ts";
 
 const root = path.resolve(import.meta.dirname, "..");
 const standalone = path.join(root, ".next/standalone");
-const mockPort = 8675;
-const appPort = 8674;
 
 cpSync(path.join(root, ".next/static"), path.join(standalone, ".next/static"), { recursive: true });
 if (existsSync(path.join(root, "public"))) {

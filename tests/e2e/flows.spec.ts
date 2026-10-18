@@ -103,7 +103,7 @@ test("a failing upstream shows the generic error page", async ({ page }) => {
     await waitForMail(email, "Confirm your spot on the Velve waitlist"),
     "/confirm",
   );
-  await fetch(`${brevoMockUrl}/__mock/fail?count=1`);
+  await fetch(`${brevoMockUrl}/__mock/fail?count=1&matching=${encodeURIComponent(email)}`);
   await page.goto(link);
   await expect(page.getByRole("heading", { name: serverError.title })).toBeVisible();
   await expect(page.locator("body")).not.toContainText(/brevo|stack|Error:/i);

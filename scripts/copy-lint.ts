@@ -64,7 +64,7 @@ function findDriftedCopy(): string[] {
   const approved = JSON.parse(
     readFileSync(path.join(import.meta.dirname, "approved-copy.json"), "utf8"),
   ) as string[];
-  const copySource = ["src/content/copy.ts", "emails/content.ts"]
+  const copySource = ["src/content/copy.ts", "src/content/legal.ts", "emails/content.ts"]
     .map((file) => path.join(root, file))
     .filter((file) => existsSync(file))
     .map((file) => readFileSync(file, "utf8"))
