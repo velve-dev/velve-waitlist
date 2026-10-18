@@ -2,7 +2,7 @@
   <img src="docs/assets/velve-logo.png" alt="Velve" width="96" height="96">
 </p>
 
-<h1 align="center">Velve</h1>
+<h1 align="center">Velve waitlist</h1>
 
 <p align="center"><strong>Security without shortcuts. Deploys as simple as a git push.</strong></p>
 
@@ -16,11 +16,7 @@
 </p>
 
 <p align="center">
-  <a href="docs/guide/README.md">Guide</a> ·
-  <a href="docs/architecture/README.md">Architecture</a> ·
-  <a href="docs/details/reference.md">Reference</a> ·
-  <a href="docs/decisions.md">Decisions</a> ·
-  <a href="TODO.md">Roadmap</a>
+  <a href="https://velve.dev">velve.dev</a>
 </p>
 
 ---

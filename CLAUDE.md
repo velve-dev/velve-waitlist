@@ -98,7 +98,7 @@ Locally, Playwright can use a preinstalled Chromium through `PLAYWRIGHT_CHROMIUM
 
 ## README
 
-From top to bottom, on about one screen: centred 96 × 96 PNG logo in `#7B5CFF` (no SVG, no `<picture>`), name as a centred `<h1>`, the bold slogan "Security without shortcuts. Deploys as simple as a git push.", centred shields.io badges in the default style (no angle brackets in alt texts, no CI badge until CI is reliably green), the link bar Guide · Architecture · Reference · Decisions · Roadmap, a `---` rule, one paragraph on what the project is, what works today and what is not built, the keys to back up, operating conditions, Read on, and License. Setup and run instructions are not part of this README; the owner keeps them privately.
+From top to bottom, on about one screen: centred 96 × 96 PNG logo in `#7B5CFF` (no SVG, no `<picture>`), the name of the repository as a centred `<h1>` (here "Velve waitlist"), the bold slogan "Security without shortcuts. Deploys as simple as a git push.", centred shields.io badges in the default style (no angle brackets in alt texts, no CI badge until CI is reliably green), a single centred link to https://velve.dev instead of a link bar, a `---` rule, one paragraph on what the project is, what works today and what is not built, the keys to back up, operating conditions, Read on, and License. Setup and run instructions are not part of this README; the owner keeps them privately.
 
 Docs for people: `README.md` and `docs/guide/` explain in full sentences with diagrams, `docs/details/` holds reference tables and deep reasoning, and `docs/decisions.md` holds ADRs, which are only appended. A new ADR supersedes an old one.
 
