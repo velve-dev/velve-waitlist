@@ -106,6 +106,51 @@ test("API and static responses are locked down too", async ({ request }) => {
   }
 });
 
+test("every other response type carries the headers too", async ({ page, request }) => {
+  await page.goto("/");
+  const script = await page.locator("script[src^='/_next/static/']").first().getAttribute("src");
+  const paths = [
+    "/robots.txt",
+    "/apple-icon.png",
+    "/opengraph-image.png",
+    script!,
+    "/_next/static/missing.js",
+    "/stats/script.js",
+  ];
+  for (const path of paths) {
+    const headers = (await request.get(path)).headers();
+    expect(headers["content-security-policy"], path).toContain("frame-ancestors 'none'");
+    expect(headers["referrer-policy"], path).toBe("no-referrer");
+    expect(headers["x-content-type-options"], path).toBe("nosniff");
+    expect(headers["permissions-policy"], path).toContain("camera=()");
+    expect(headers["set-cookie"], path).toBeUndefined();
+  }
+  const rsc = await request.get("/imprint", { headers: { rsc: "1", "next-router-prefetch": "1" } });
+  expect(rsc.headers()["content-security-policy"]).toContain("frame-ancestors 'none'");
+  expect(rsc.headers()["set-cookie"]).toBeUndefined();
+});
+
+test("the rate limit answer is locked down", async ({ request }) => {
+  let response = await request.get("/confirm/broken", {
+    headers: { "x-forwarded-for": "10.211.0.1" },
+  });
+  for (let attempt = 0; attempt < 200 && response.status() !== 429; attempt += 1) {
+    response = await request.get("/confirm/broken", {
+      headers: { "x-forwarded-for": "10.211.0.1" },
+    });
+  }
+  expect(response.status()).toBe(429);
+  const headers = response.headers();
+  expect(headers["content-security-policy"]).toContain("default-src 'none'");
+  expect(headers["referrer-policy"]).toBe("no-referrer");
+  expect(headers["x-content-type-options"]).toBe("nosniff");
+});
+
+test("mail images load in webmail on other origins", async ({ request }) => {
+  const headers = (await request.get("/email/logo-mark.png")).headers();
+  expect(headers["cross-origin-resource-policy"]).toBe("cross-origin");
+});
+
 test("search engines are kept out while the site is not indexable", async ({ page, request }) => {
   expect(await (await request.get("/robots.txt")).text()).toContain("Disallow: /");
   await page.goto("/");
@@ -132,6 +177,24 @@ test("the detailed health route needs the token and hides internals", async ({ r
     checks: { configuration: "ok", mail: "ok" },
   });
   expect(text).not.toMatch(/127\.0\.0\.1|brevo|key/i);
+
+  const wrong = e2eHealthToken.replace(/.$/, (last) => (last === "0" ? "1" : "0"));
+  const refused = await request.get("/api/health/detailed", {
+    headers: { authorization: `Bearer ${wrong}` },
+  });
+  expect(refused.status()).toBe(401);
+
+  await fetch(`${brevoMockUrl}/__mock/fail?count=1&matching=/contacts/lists/`);
+  const degraded = await request.get("/api/health/detailed", {
+    headers: { authorization: `Bearer ${e2eHealthToken}` },
+  });
+  expect(degraded.status()).toBe(200);
+  const degradedText = await degraded.text();
+  expect(JSON.parse(degradedText)).toMatchObject({
+    status: "degraded",
+    checks: { mail: "error" },
+  });
+  expect(degradedText).not.toMatch(/127\.0\.0\.1|brevo|key|stack|503/i);
 });
 
 test("analytics runs through our origin and never sees link tokens", async ({ page }) => {

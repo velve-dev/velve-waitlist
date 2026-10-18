@@ -181,3 +181,40 @@ describe("pre-push hook", () => {
     expect(result.output).toContain("trailer");
   });
 });
+
+describe("legal check", () => {
+  function runLegal(root: string, indexable: string) {
+    return spawnSync(process.execPath, [path.join(repoRoot, "scripts/check-legal.ts")], {
+      env: { ...process.env, CHECK_ROOT: root, SITE_INDEXABLE: indexable },
+      encoding: "utf8",
+    }).status;
+  }
+
+  const finished = {
+    "src/content/legal.ts": "export const imprint = {};\n",
+    "src/app/imprint/page.tsx": "export default function P() { return null; }\n",
+    "src/app/privacy/page.tsx": "export default function P() { return null; }\n",
+  };
+
+  it("passes an indexable build once every placeholder is gone", () => {
+    expect(runLegal(sandbox(finished), "true")).toBe(0);
+  });
+
+  it("fails an indexable build while the legal texts hold a placeholder", () => {
+    expect(runLegal(sandbox({}), "true")).toBe(1);
+  });
+
+  it("reads the switch the way the server does", () => {
+    expect(runLegal(sandbox({}), " true\n")).toBe(1);
+  });
+
+  it("fails on a placeholder in the privacy page", () => {
+    const root = sandbox({ ...finished, "src/app/privacy/page.tsx": "const x = '[TODO] y';\n" });
+    expect(runLegal(root, "true")).toBe(1);
+  });
+
+  it("fails when a legal source is missing", () => {
+    const root = sandbox({ "src/content/legal.ts": "export const imprint = {};\n" });
+    expect(runLegal(root, "true")).toBe(1);
+  });
+});
