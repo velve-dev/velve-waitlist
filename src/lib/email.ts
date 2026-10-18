@@ -15,3 +15,18 @@ export function findEmailProblem(raw: string): EmailProblem | null {
 export function normaliseEmail(raw: string): string {
   return raw.trim().toLowerCase();
 }
+
+const dotlessDomains = new Map([
+  ["gmail.com", "gmail.com"],
+  ["googlemail.com", "gmail.com"],
+]);
+
+export function mailboxIdentity(email: string): string {
+  const at = email.lastIndexOf("@");
+  const domain = email.slice(at + 1);
+  const untagged = email.slice(0, at).split("+")[0] ?? "";
+  const dotless = dotlessDomains.get(domain);
+  return dotless === undefined
+    ? `${untagged}@${domain}`
+    : `${untagged.replaceAll(".", "")}@${dotless}`;
+}

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createFormToken } from "@/server/link-tokens";
 import { handleSignup } from "@/server/signup";
 import { testServices } from "../support/services";
@@ -139,5 +139,141 @@ describe("handleSignup", () => {
     services.brevo.sendMail = () => Promise.reject(new Error("upstream_status_503"));
     expect((await send({ email: "alex@company.com" })).status).toBe(200);
     await Promise.all(services.deferred);
+  });
+});
+
+function streamedRequest(body: ReadableStream<Uint8Array>, ip: string) {
+  return new Request("https://velve.test/api/subscribe", {
+    method: "POST",
+    headers: { "x-forwarded-for": ip },
+    body,
+    duplex: "half",
+  } as RequestInit & { duplex: "half" });
+}
+
+describe("handleSignup abuse resistance", () => {
+  it("counts every address of one IPv6 /64 as the same network", async () => {
+    const { send } = setup();
+    for (let host = 1; host <= 5; host += 1) {
+      const response = await send({ email: `v6-${host}@company.com` }, `2001:db8:1:2::${host}`);
+      expect(response.status).toBe(200);
+    }
+    const limited = await send({ email: "v6-6@company.com" }, "2001:db8:1:2:ffff:1:2:3");
+    expect(limited.status).toBe(429);
+    expect((await send({ email: "v6-7@company.com" }, "2001:db8:1:3::1")).status).toBe(200);
+  });
+
+  it("treats an IPv4-mapped IPv6 address as the IPv4 address", async () => {
+    const { send } = setup({ SIGNUP_LIMIT_PER_IP: "1" });
+    expect((await send({ email: "m1@company.com" }, "::ffff:192.0.2.7")).status).toBe(200);
+    expect((await send({ email: "m2@company.com" }, "192.0.2.7")).status).toBe(429);
+  });
+
+  it("sends one mail per mailbox regardless of plus tags and Gmail dots", async () => {
+    const { services, send } = setup();
+    await send({ email: "victim@company.com" }, "198.51.100.20");
+    await send({ email: "victim+1@company.com" }, "198.51.100.21");
+    await send({ email: "victim+2@Company.com" }, "198.51.100.22");
+    await send({ email: "some.victim@gmail.com" }, "198.51.100.23");
+    await send({ email: "somevictim+x@googlemail.com" }, "198.51.100.24");
+    await send({ email: "s.o.m.e.victim@gmail.com" }, "198.51.100.25");
+    await Promise.all(services.deferred);
+    expect(services.brevo.sent.map((mail) => mail.to.email)).toEqual([
+      "victim@company.com",
+      "some.victim@gmail.com",
+    ]);
+  });
+
+  it("counts invalid JSON against the network limit", async () => {
+    const { services } = setup({ SIGNUP_LIMIT_PER_IP: "2" });
+    const garbage = () =>
+      new Request("https://velve.test/api/subscribe", {
+        method: "POST",
+        headers: { "x-forwarded-for": "198.51.100.30" },
+        body: "{not json",
+      });
+    expect((await handleSignup(garbage(), services)).status).toBe(400);
+    expect((await handleSignup(garbage(), services)).status).toBe(400);
+    expect((await handleSignup(garbage(), services)).status).toBe(429);
+  });
+
+  it("stops reading an oversized body instead of buffering it", async () => {
+    const { services } = setup();
+    let pulled = 0;
+    const endless = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        pulled += 1;
+        controller.enqueue(new Uint8Array(1024).fill(32));
+      },
+    });
+    const response = await handleSignup(streamedRequest(endless, "198.51.100.31"), services);
+    expect(response.status).toBe(400);
+    expect(pulled).toBeLessThan(64);
+  }, 5000);
+
+  it("measures the body limit in bytes, not characters", async () => {
+    const { services, formToken } = setup();
+    const body = JSON.stringify({ email: "big@company.com", formToken, name: "ä".repeat(2100) });
+    const request = new Request("https://velve.test/api/subscribe", {
+      method: "POST",
+      headers: { "x-forwarded-for": "198.51.100.32", "content-type": "application/json" },
+      body,
+    });
+    expect((await handleSignup(request, services)).status).toBe(400);
+  });
+
+  it("keeps the address free when the daily cap stops its mail", async () => {
+    let now = start;
+    const services = testServices({ env: { DAILY_SEND_CAP: "1" }, now: () => now });
+    const formToken = createFormToken(start - 5000, services.config.tokenKey);
+    let releaseSlowBody: () => void = () => undefined;
+    const slowBody = new ReadableStream<Uint8Array>({
+      start(controller) {
+        releaseSlowBody = () => {
+          controller.enqueue(
+            new TextEncoder().encode(JSON.stringify({ email: "slow@company.com", formToken })),
+          );
+          controller.close();
+        };
+      },
+    });
+    const slow = handleSignup(streamedRequest(slowBody, "198.51.100.40"), services);
+    const fast = await handleSignup(
+      signupRequest({ email: "fast@company.com", formToken }, "198.51.100.41"),
+      services,
+    );
+    expect(fast.status).toBe(200);
+    releaseSlowBody();
+    expect((await slow).status).toBe(429);
+    now = Date.UTC(2026, 9, 19, 0, 0, 1);
+    const nextDayToken = createFormToken(now - 5000, services.config.tokenKey);
+    await handleSignup(
+      signupRequest({ email: "slow@company.com", formToken: nextDayToken }, "198.51.100.42"),
+      services,
+    );
+    await Promise.all(services.deferred);
+    expect(services.brevo.sent.map((mail) => mail.to.email)).toEqual([
+      "fast@company.com",
+      "slow@company.com",
+    ]);
+  });
+
+  it("logs only a stable code when the mail fails", async () => {
+    const { services, send } = setup();
+    services.brevo.sendMail = () => Promise.reject(new Error("rejected alex@company.com"));
+    const lines: string[] = [];
+    const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk) => {
+      lines.push(String(chunk));
+      return true;
+    });
+    try {
+      await send({ email: "alex@company.com", name: "Alex" });
+      await Promise.all(services.deferred);
+    } finally {
+      spy.mockRestore();
+    }
+    const output = lines.join("");
+    expect(output).toContain("confirm_mail_failed");
+    expect(output).not.toMatch(/alex/i);
   });
 });

@@ -81,3 +81,9 @@ The browser loads `/stats/script.js` and posts events to `/stats/api/send` on ou
 **Status:** accepted, 2026-10-18
 
 Confirmation and unsubscribe pages render on the server, and a page cannot answer 429. The Next.js proxy counts requests to `/confirm`, `/unsubscribe`, `/api/unsubscribe` and `/api/webhooks` per network, with its own limits, and answers 429 with `Retry-After` and the approved rate-limit sentence as plain text.
+
+## ADR 12: Limit by network and by mailbox, not by spelling
+
+**Status:** accepted, 2026-10-18
+
+Extends ADR 6. One IPv6 customer usually holds a whole /64, so a limiter keyed on single IPv6 addresses could be sidestepped by rotating the host part. The limiter keys IPv6 clients on their /64 prefix and IPv4-mapped IPv6 addresses on the IPv4 address. The per-address mail interval keys on the mailbox: a `+tag` is dropped, and for Gmail the dots and the `googlemail.com` alias as well, so one inbox cannot be flooded through spelling variants. The mail itself still goes to the address as typed. The request body is read as a stream and abandoned once it passes 4 KiB, so an oversized body costs nothing.

@@ -1,9 +1,10 @@
 // Accepts a waitlist sign-up and sends the confirmation email.
 import "server-only";
 import { buildConfirmMail, siteLinks } from "../../emails/mails.ts";
-import { findEmailProblem, normaliseEmail } from "@/lib/email";
+import { findEmailProblem, mailboxIdentity, normaliseEmail } from "@/lib/email";
 import { cleanFirstName, greetingFor } from "@/lib/name";
-import { clientIp } from "./client-ip";
+import { BrevoError } from "./brevo";
+import { clientNetwork } from "./client-ip";
 import { createConfirmToken, readFormTokenIssuedAt } from "./link-tokens";
 import { logEvent } from "./log";
 import { anonymousKey, stableKey } from "./rate-limit";
@@ -43,7 +44,7 @@ export async function handleSignup(request: Request, services: Services): Promis
     return rateLimited(capState.retryAfterSeconds);
   }
 
-  const ipKey = anonymousKey(clientIp(request.headers), config.rateLimitSaltSecret, now);
+  const ipKey = anonymousKey(clientNetwork(request.headers), config.rateLimitSaltSecret, now);
   const ipDecision = services.signupsPerIp.hit(ipKey, now);
   if (!ipDecision.allowed) {
     logEvent("signup_rate_limited");
@@ -60,9 +61,15 @@ export async function handleSignup(request: Request, services: Services): Promis
     return accepted();
   }
 
+  const capBeforeSend = services.sendCap.peek(now);
+  if (!capBeforeSend.allowed) {
+    logEvent("send_cap_reached");
+    return rateLimited(capBeforeSend.retryAfterSeconds);
+  }
+
   const email = normaliseEmail(fields.email);
   const addressDecision = services.confirmMailsPerAddress.hit(
-    stableKey(email, config.rateLimitSaltSecret),
+    stableKey(mailboxIdentity(email), config.rateLimitSaltSecret),
     now,
   );
   if (!addressDecision.allowed) {
@@ -70,12 +77,7 @@ export async function handleSignup(request: Request, services: Services): Promis
     return accepted();
   }
 
-  const sendDecision = services.sendCap.take(now);
-  if (!sendDecision.allowed) {
-    logEvent("send_cap_reached");
-    return rateLimited(sendDecision.retryAfterSeconds);
-  }
-
+  services.sendCap.take(now);
   logEvent("signup_accepted");
   services.defer(() => sendConfirmation(email, fields.name, now, services));
   return accepted();
@@ -105,6 +107,6 @@ async function sendConfirmation(email: string, rawName: string, now: number, ser
     });
     logEvent("confirm_mail_sent");
   } catch (error) {
-    logEvent("confirm_mail_failed", error instanceof Error ? error.message : "unknown");
+    logEvent("confirm_mail_failed", error instanceof BrevoError ? error.code : "unknown");
   }
 }

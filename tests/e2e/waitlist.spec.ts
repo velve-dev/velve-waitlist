@@ -150,6 +150,41 @@ test.describe("with reduced motion", () => {
   });
 });
 
+test.describe("on a phone", () => {
+  test.use({ viewport: { width: 375, height: 812 } });
+
+  test("heading and subline take at most three lines together", async ({ page }) => {
+    await page.goto("/");
+    const lines = await page.evaluate(() =>
+      ["h1", "main p"].reduce((total, selector) => {
+        const element = document.querySelector(selector);
+        if (element === null) return total + 99;
+        const lineHeight = Number.parseFloat(getComputedStyle(element).lineHeight);
+        return total + Math.round(element.getBoundingClientRect().height / lineHeight);
+      }, 0),
+    );
+    expect(lines).toBeLessThanOrEqual(3);
+  });
+});
+
+test("signing up stays on our origin and leaves no cookies or storage", async ({
+  page,
+  context,
+  baseURL,
+}) => {
+  await useFreshNetwork(page);
+  const origins = new Set<string>();
+  page.on("request", (request) => {
+    origins.add(new URL(request.url()).origin);
+  });
+  await signUp(page, uniqueEmail("privacy"), "Alex");
+  await page.waitForTimeout(300);
+  expect([...origins]).toEqual([new URL(baseURL ?? "").origin]);
+  expect(await context.cookies()).toEqual([]);
+  const stored = await page.evaluate(() => localStorage.length + sessionStorage.length);
+  expect(stored).toBe(0);
+});
+
 test("bots filling the honeypot get the same answer and no mail", async ({ page }) => {
   await useFreshNetwork(page);
   const address = uniqueEmail("honeypot");

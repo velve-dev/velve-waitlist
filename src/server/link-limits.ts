@@ -1,6 +1,6 @@
 // Applies per-network limits to link and webhook routes.
 import "server-only";
-import { clientIp } from "./client-ip";
+import { clientNetwork } from "./client-ip";
 import type { Config } from "./config";
 import { logEvent } from "./log";
 import { anonymousKey, WindowLimiter, type LimitDecision } from "./rate-limit";
@@ -39,7 +39,7 @@ export function checkLinkLimit(
   config: Config,
   now: number,
 ): LimitDecision {
-  const key = anonymousKey(clientIp(headers), config.rateLimitSaltSecret, now);
+  const key = anonymousKey(clientNetwork(headers), config.rateLimitSaltSecret, now);
   const decision = limiterFor(group, config).hit(key, now);
   if (!decision.allowed) logEvent("link_rate_limited", group);
   return decision;

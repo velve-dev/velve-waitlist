@@ -2,6 +2,7 @@
 import "server-only";
 import { buildWelcomeMail, siteLinks } from "../../emails/mails.ts";
 import { greetingFor } from "@/lib/name";
+import { BrevoError } from "./brevo";
 import { createUnsubscribeToken, readConfirmToken } from "./link-tokens";
 import { logEvent } from "./log";
 import type { Services } from "./services";
@@ -60,6 +61,6 @@ async function sendWelcome(email: string, greeting: string, services: Services) 
     });
     logEvent("welcome_mail_sent");
   } catch (error) {
-    logEvent("welcome_mail_failed", error instanceof Error ? error.message : "unknown");
+    logEvent("welcome_mail_failed", error instanceof BrevoError ? error.code : "unknown");
   }
 }
