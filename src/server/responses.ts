@@ -31,6 +31,16 @@ async function readCappedBytes(request: Request, maxBytes: number): Promise<Uint
   return Buffer.concat(chunks);
 }
 
+export async function readCappedText(request: Request, maxBytes: number): Promise<string | null> {
+  const bytes = await readCappedBytes(request, maxBytes);
+  if (bytes === null) return null;
+  try {
+    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  } catch {
+    return null;
+  }
+}
+
 export async function readJsonBody(request: Request, maxBytes: number): Promise<unknown> {
   const bytes = await readCappedBytes(request, maxBytes);
   if (bytes === null) return null;

@@ -2,6 +2,7 @@
 import "server-only";
 import { readUmami } from "./config";
 import { logEvent } from "./log";
+import { readCappedText } from "./responses";
 
 const scriptLifetimeMs = 60 * 60 * 1000;
 const maxEventBytes = 16 * 1024;
@@ -41,8 +42,8 @@ export async function serveTrackerScript(): Promise<Response> {
 export async function relayEvent(request: Request): Promise<Response> {
   const umami = umamiSettings();
   if (umami === null) return new Response(null, { status: 404 });
-  const body = await request.text();
-  if (body.length > maxEventBytes) return new Response(null, { status: 413 });
+  const body = await readCappedText(request, maxEventBytes);
+  if (body === null) return new Response(null, { status: 413 });
   try {
     const response = await fetch(`${umami.url}/api/send`, {
       method: "POST",

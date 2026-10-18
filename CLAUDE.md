@@ -78,7 +78,7 @@ Push or merge only when every gate is green. A red gate is never skipped or weak
 
 ## Gates
 
-`pnpm verify` runs all of them, and CI runs the same on every push to `main`. `pnpm emails:check` and `pnpm docker:check` join `pnpm verify` with the building blocks that add the mails and the Dockerfile; until then they do not exist.
+`pnpm verify` runs every gate except the container image, and CI runs the same on every push to `main`. `pnpm docker:check` needs a Docker daemon, so CI runs it as its own job and it is not part of `pnpm verify`.
 
 | Gate                                        | Command              |
 | ------------------------------------------- | -------------------- |
