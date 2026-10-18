@@ -1,10 +1,5 @@
 // Imprint and privacy texts, approved word for word.
-export const pendingLegalReview: readonly string[] = [
-  "[TODO] Name the data centre operators behind Levo Studio's servers, with their countries.",
-  "[TODO] Confirm that server logs are deleted after 7 days.",
-  "[TODO] Check Brevo's address against the current data processing agreement.",
-  "[TODO] Release the sentence on anonymous open and click counting after the mail test.",
-];
+export const pendingLegalReview: readonly string[] = [];
 
 export const imprint = {
   title: "Imprint",
@@ -62,11 +57,11 @@ export const privacy = {
     },
     {
       heading: "Where it lives and who helps",
-      text: "This website runs on infrastructure operated by Levo Studio on servers in Germany and the Netherlands, described at levo-studio.com. The list itself is kept at Brevo, operated by Sendinblue SAS, 106 boulevard Haussmann, 75008 Paris, France, which stores your address in the EU and sends our emails on our behalf under a data processing agreement. Brevo counts email opens and clicks only anonymously, as totals that are never linked to you. Page views are counted with Umami on Levo Studio's servers, without cookies, IP addresses or profiles.",
+      text: "This website runs on infrastructure operated by Levo Studio on rented servers in Germany and the Netherlands: Hetzner in Falkenstein, Datalix in Frankfurt and Virtbase in the Netherlands, each under a data processing agreement. The list itself is kept at Brevo, operated by Sendinblue SAS, 17 rue Salneuve, 75017 Paris, France, which stores your address in the EU and sends our emails on our behalf under a data processing agreement. Brevo counts email opens and clicks only anonymously, as totals that are never linked to you. Page views are counted with Umami on Levo Studio's servers, without cookies, IP addresses or profiles.",
     },
     {
       heading: "How long we keep it",
-      text: "Until you unsubscribe or ask us to delete it, then it is deleted, not just hidden. If you never click the confirmation link, your address never makes it onto the list. Server logs are deleted after 7 days. This site sets no cookies and loads nothing from anyone else.",
+      text: "Until you unsubscribe or ask us to delete it, then it is deleted, not just hidden. If you never click the confirmation link, your address never makes it onto the list. Our server logs contain no email addresses, names or IP addresses, stay on our own servers and are not used for analytics. This site sets no cookies and loads nothing from anyone else.",
     },
     {
       heading: "Your rights",

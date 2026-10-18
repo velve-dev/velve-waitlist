@@ -111,3 +111,16 @@ The Next.js proxy creates a fresh nonce per request and sends `script-src 'self'
 **Status:** accepted, 2026-10-18
 
 The brief asks `pnpm verify` to run every gate, and G13 allows the image check to run only in CI where no Docker daemon is available locally. `pnpm docker:check` builds the image, starts it and waits for a healthy `HEALTHCHECK`, which needs a Docker daemon and takes minutes. Making it part of `pnpm verify` would block every push from a machine without Docker and slow the pre-push hook for no gain on most changes. CI therefore runs it as its own job on every push to `main`, next to `pnpm verify`, and the deploy workflow only starts when both jobs are green. Anyone changing `Dockerfile.dokploy`, `.dockerignore` or the build output runs `pnpm docker:check` locally before pushing.
+
+## ADR 17: Close the legal review points and allow indexing
+
+**Status:** accepted, 2026-10-18, supersedes the open points listed under ADR 14
+
+The owner settled the four open legal points:
+
+- **Hosting:** the servers are rented from Hetzner in Falkenstein, Datalix in Frankfurt and Virtbase in the Netherlands, each under a data processing agreement. The privacy policy names them by brand.
+- **Logs:** logs are not deleted on a schedule, so the sentence "Server logs are deleted after 7 days" is replaced. The app never logs email addresses, names or IP addresses, Traefik writes no access logs for this app, and logs are not used for analytics. The privacy policy now says exactly that.
+- **Brevo:** Brevo's current privacy policy and imprint give Sendinblue SAS, 17 rue Salneuve, 75017 Paris, France (RCS Paris 498 019 298). The address in the brief, 106 boulevard Haussmann, is out of date.
+- **Tracking sentence:** released by the owner. It is only true once per-contact pixel tracking consent is switched on in Brevo, as the Brevo checklist says, and the mail test should still confirm it.
+
+`pendingLegalReview` is empty, so `SITE_INDEXABLE=true` in Dokploy now lets search engines in. Naming hosting providers in the privacy policy is required by law and is not affected by the copy rule against naming providers in marketing text.

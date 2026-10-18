@@ -16,7 +16,7 @@ The waitlist runs as one container on Levo Studio's Dokploy cluster. Everything 
 - **Domain:** `velve.dev` with HTTPS through Traefik.
 - **Replicas:** one. The rate limiters live in memory. A second instance needs Valkey on Levo infrastructure first.
 - **Health check:** the image declares one on `GET /api/health`. Monitoring can use `GET /api/health/detailed` with `Authorization: Bearer <HEALTH_TOKEN>`.
-- **Logs:** keep container logs for at most 7 days, as the privacy policy says.
+- **Logs:** the app logs no email addresses, names or IP addresses, and Traefik access logs stay off for this app. The privacy policy relies on both.
 
 ## Environment
 

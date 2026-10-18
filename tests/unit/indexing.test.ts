@@ -9,8 +9,14 @@ describe("siteIsIndexable", () => {
   });
 
   it("stays off while legal texts await review, even when switched on", () => {
-    expect(pendingLegalReview.length).toBeGreaterThan(0);
-    expect(siteIsIndexable({ SITE_INDEXABLE: "true" })).toBe(false);
+    expect(siteIsIndexable({ SITE_INDEXABLE: "true" }, ["[TODO] open point"])).toBe(false);
+  });
+
+  it("turns on once the legal review list is empty and the switch is set", () => {
+    expect(pendingLegalReview).toEqual([]);
+    expect(siteIsIndexable({ SITE_INDEXABLE: "true" })).toBe(true);
+    expect(siteIsIndexable({ SITE_INDEXABLE: " true " })).toBe(true);
+    expect(siteIsIndexable({ SITE_INDEXABLE: "false" })).toBe(false);
   });
 });
 
