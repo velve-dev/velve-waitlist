@@ -27,6 +27,13 @@ export class WindowLimiter {
     return { allowed: true };
   }
 
+  release(key: string) {
+    const current = this.windows.get(key);
+    if (current === undefined) return;
+    if (current.count <= 1) this.windows.delete(key);
+    else current.count -= 1;
+  }
+
   private remember(key: string, window: { count: number; resetAt: number }) {
     this.windows.delete(key);
     if (this.windows.size >= maxTrackedKeys) {

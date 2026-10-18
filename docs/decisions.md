@@ -124,3 +124,9 @@ The owner settled the four open legal points:
 - **Tracking sentence:** released by the owner. It is only true once per-contact pixel tracking consent is switched on in Brevo, as the Brevo checklist says, and the mail test should still confirm it.
 
 `pendingLegalReview` is empty, so `SITE_INDEXABLE=true` in Dokploy now lets search engines in. Naming hosting providers in the privacy policy is required by law and is not affected by the copy rule against naming providers in marketing text.
+
+## ADR 18: A failed confirmation mail does not lock the mailbox
+
+**Status:** accepted, 2026-10-18, extends ADR 4 and ADR 12
+
+The per-mailbox interval is spent before the mail goes out, because the mail is sent after the response. When Brevo refuses the send, the interval is now released again, so the next attempt sends a real mail instead of answering "Check your inbox" for a mail that never left. The answer to the visitor stays the same either way.

@@ -140,6 +140,18 @@ describe("handleSignup", () => {
     expect((await send({ email: "alex@company.com" })).status).toBe(200);
     await Promise.all(services.deferred);
   });
+
+  it("lets the mailbox try again when the confirmation mail could not be sent", async () => {
+    const { services, send } = setup();
+    const working = services.brevo.sendMail;
+    services.brevo.sendMail = () => Promise.reject(new Error("upstream_status_401"));
+    await send({ email: "alex@company.com" }, "192.0.2.20");
+    await Promise.all(services.deferred);
+    services.brevo.sendMail = working;
+    await send({ email: "alex@company.com" }, "192.0.2.21");
+    await Promise.all(services.deferred);
+    expect(services.brevo.sent.map((mail) => mail.to.email)).toEqual(["alex@company.com"]);
+  });
 });
 
 function streamedRequest(body: ReadableStream<Uint8Array>, ip: string) {

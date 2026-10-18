@@ -68,10 +68,8 @@ export async function handleSignup(request: Request, services: Services): Promis
   }
 
   const email = normaliseEmail(fields.email);
-  const addressDecision = services.confirmMailsPerAddress.hit(
-    stableKey(mailboxIdentity(email), config.rateLimitSaltSecret),
-    now,
-  );
+  const mailboxKey = stableKey(mailboxIdentity(email), config.rateLimitSaltSecret);
+  const addressDecision = services.confirmMailsPerAddress.hit(mailboxKey, now);
   if (!addressDecision.allowed) {
     logEvent("signup_suppressed", "address_interval");
     return accepted();
@@ -79,11 +77,17 @@ export async function handleSignup(request: Request, services: Services): Promis
 
   services.sendCap.take(now);
   logEvent("signup_accepted");
-  services.defer(() => sendConfirmation(email, fields.name, now, services));
+  services.defer(() => sendConfirmation(email, fields.name, now, mailboxKey, services));
   return accepted();
 }
 
-async function sendConfirmation(email: string, rawName: string, now: number, services: Services) {
+async function sendConfirmation(
+  email: string,
+  rawName: string,
+  now: number,
+  mailboxKey: string,
+  services: Services,
+) {
   const { config } = services;
   const firstName = cleanFirstName(rawName);
   const token = createConfirmToken(
@@ -107,6 +111,7 @@ async function sendConfirmation(email: string, rawName: string, now: number, ser
     });
     logEvent("confirm_mail_sent");
   } catch (error) {
+    services.confirmMailsPerAddress.release(mailboxKey);
     logEvent("confirm_mail_failed", error instanceof BrevoError ? error.code : "unknown");
   }
 }
