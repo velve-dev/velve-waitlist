@@ -64,6 +64,7 @@ export const submitted = {
   title: "Check your inbox",
   body: "Click the link we've sent to {email}. Typo?",
   typo: "Typo?",
+  hint: "Nothing there? Check your spam folder. Each address gets one link a day.",
 } as const;
 
 export const confirmed = {

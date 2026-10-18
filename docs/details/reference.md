@@ -4,34 +4,34 @@
 
 Every key is listed in `.env.example` without a value. Secrets have no default and the app refuses to serve sign-ups without them. Tunables fall back to the defaults below.
 
-| Key                             | Secret | Default                    | Meaning                                                                      |
-| ------------------------------- | ------ | -------------------------- | ---------------------------------------------------------------------------- |
-| `PORT`                          | no     | 8674                       | Port the server listens on. Set by the image.                                |
-| `SITE_URL`                      | no     | none, required             | Public origin used in mail links, for example `https://velve.dev`.           |
-| `SITE_INDEXABLE`                | no     | `false`                    | `true` lets search engines in, but only once the legal review list is empty. |
-| `BREVO_API_URL`                 | no     | `https://api.brevo.com/v3` | Brevo API base. Tests point it at a mock.                                    |
-| `BREVO_API_KEY`                 | yes    | none, required             | Brevo key limited to contacts and transactional mail.                        |
-| `BREVO_LIST_ID`                 | no     | none, required             | ID of the list "Velve waitlist".                                             |
-| `BREVO_SENDER_EMAIL`            | no     | none, required             | `updates@velve.dev`.                                                         |
-| `BREVO_SENDER_NAME`             | no     | none, required             | `Velve`.                                                                     |
-| `BREVO_REPLY_TO`                | no     | none, required             | `hello@velve.dev`.                                                           |
-| `BREVO_WEBHOOK_SECRET`          | yes    | none, required, 32+ chars  | Bearer token Brevo sends to the webhook.                                     |
-| `TOKEN_KEY`                     | yes    | none, required             | 32 random bytes, base64. Seals every link. Back it up.                       |
-| `RATE_LIMIT_SALT_SECRET`        | yes    | none, required, 32+ chars  | Derives the daily salt for network keys and the mailbox keys.                |
-| `DAILY_SEND_CAP`                | no     | 150                        | Mails per UTC day across confirmation and welcome mails.                     |
-| `SIGNUP_LIMIT_PER_IP`           | no     | 5                          | Sign-ups per network per window.                                             |
-| `SIGNUP_LIMIT_WINDOW_SECONDS`   | no     | 600                        | Window for the sign-up limit.                                                |
-| `CONFIRM_MAIL_INTERVAL_SECONDS` | no     | 86400                      | Minimum time between two confirmation mails to one mailbox.                  |
-| `MIN_FORM_SECONDS`              | no     | 1.5                        | Minimum time between rendering the form and submitting it.                   |
-| `LINK_LIMIT_PER_IP`             | no     | 30                         | Requests to confirm and unsubscribe routes per network per window.           |
-| `LINK_LIMIT_WINDOW_SECONDS`     | no     | 600                        | Window for the link limit.                                                   |
-| `WEBHOOK_LIMIT_PER_IP`          | no     | 300                        | Webhook calls per network per window.                                        |
-| `WEBHOOK_LIMIT_WINDOW_SECONDS`  | no     | 60                         | Window for the webhook limit.                                                |
-| `CONFIRM_TOKEN_TTL_SECONDS`     | no     | 604800                     | How long a confirmation link stays valid.                                    |
-| `CONSENT_VERSION`               | no     | none, required             | Version of the consent text, stored with each contact.                       |
-| `HEALTH_TOKEN`                  | yes    | none, required, 32+ chars  | Bearer token for the detailed health route.                                  |
-| `UMAMI_URL`                     | no     | none                       | Internal Umami URL. Without it and the website ID, no analytics run.         |
-| `UMAMI_WEBSITE_ID`              | no     | none                       | Umami website ID.                                                            |
+| Key                             | Secret | Default                    | Meaning                                                                                                               |
+| ------------------------------- | ------ | -------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `PORT`                          | no     | 8674                       | Port the server listens on. Set by the image.                                                                         |
+| `SITE_URL`                      | no     | none, required             | Public origin used in mail links, for example `https://velve.dev`.                                                    |
+| `SITE_INDEXABLE`                | no     | `false`                    | `true` lets search engines in, but only once the legal review list is empty.                                          |
+| `BREVO_API_URL`                 | no     | `https://api.brevo.com/v3` | Brevo API base. Tests point it at a mock.                                                                             |
+| `BREVO_API_KEY`                 | yes    | none, required             | Brevo key limited to contacts and transactional mail.                                                                 |
+| `BREVO_LIST_ID`                 | no     | none, required             | ID of the list "Velve waitlist".                                                                                      |
+| `BREVO_SENDER_EMAIL`            | no     | none, required             | `updates@velve.dev`.                                                                                                  |
+| `BREVO_SENDER_NAME`             | no     | none, required             | `Velve`.                                                                                                              |
+| `BREVO_REPLY_TO`                | no     | none, required             | `hello@velve.dev`.                                                                                                    |
+| `BREVO_WEBHOOK_SECRET`          | yes    | none, required, 32+ chars  | Bearer token Brevo sends to the webhook.                                                                              |
+| `TOKEN_KEY`                     | yes    | none, required             | 32 random bytes, base64. Seals every link. Back it up.                                                                |
+| `RATE_LIMIT_SALT_SECRET`        | yes    | none, required, 32+ chars  | Derives the daily salt for network keys and the mailbox keys.                                                         |
+| `DAILY_SEND_CAP`                | no     | 150                        | Mails per UTC day across confirmation and welcome mails.                                                              |
+| `SIGNUP_LIMIT_PER_IP`           | no     | 5                          | Sign-ups per network per window.                                                                                      |
+| `SIGNUP_LIMIT_WINDOW_SECONDS`   | no     | 600                        | Window for the sign-up limit.                                                                                         |
+| `CONFIRM_MAIL_INTERVAL_SECONDS` | no     | 86400                      | Minimum time between two confirmation mails to one mailbox. Keep it at 86400: the page tells people "one link a day". |
+| `MIN_FORM_SECONDS`              | no     | 1.5                        | Minimum time between rendering the form and submitting it.                                                            |
+| `LINK_LIMIT_PER_IP`             | no     | 30                         | Requests to confirm and unsubscribe routes per network per window.                                                    |
+| `LINK_LIMIT_WINDOW_SECONDS`     | no     | 600                        | Window for the link limit.                                                                                            |
+| `WEBHOOK_LIMIT_PER_IP`          | no     | 300                        | Webhook calls per network per window.                                                                                 |
+| `WEBHOOK_LIMIT_WINDOW_SECONDS`  | no     | 60                         | Window for the webhook limit.                                                                                         |
+| `CONFIRM_TOKEN_TTL_SECONDS`     | no     | 604800                     | How long a confirmation link stays valid.                                                                             |
+| `CONSENT_VERSION`               | no     | none, required             | Version of the consent text, stored with each contact.                                                                |
+| `HEALTH_TOKEN`                  | yes    | none, required, 32+ chars  | Bearer token for the detailed health route.                                                                           |
+| `UMAMI_URL`                     | no     | none                       | Internal Umami URL. Without it and the website ID, no analytics run.                                                  |
+| `UMAMI_WEBSITE_ID`              | no     | none                       | Umami website ID.                                                                                                     |
 
 ## Routes
 

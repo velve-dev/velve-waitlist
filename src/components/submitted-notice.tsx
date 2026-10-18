@@ -56,6 +56,7 @@ export function SubmittedNotice({ email, onTypo }: { email: string; onTypo: () =
           {submitted.typo}
         </button>
       </p>
+      <p className="m-0 text-13 leading-normal text-muted">{submitted.hint}</p>
     </section>
   );
 }

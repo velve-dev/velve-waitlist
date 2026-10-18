@@ -130,3 +130,9 @@ The owner settled the four open legal points:
 **Status:** accepted, 2026-10-18, extends ADR 4 and ADR 12
 
 The per-mailbox interval is spent before the mail goes out, because the mail is sent after the response. When Brevo refuses the send, the interval is now released again, so the next attempt sends a real mail instead of answering "Check your inbox" for a mail that never left. The answer to the visitor stays the same either way.
+
+## ADR 19: Tell everyone about the spam folder and the daily link
+
+**Status:** accepted, 2026-10-18
+
+Because suppressed sign-ups answer like new ones (ADR 4), someone who signs up twice sees "Check your inbox" without a second mail. Under "Check your inbox" every visitor now reads "Nothing there? Check your spam folder. Each address gets one link a day." It is shown to everyone, so it reveals nothing about any address. The owner approved the wording as a deliberate exception to the rule against naming time limits in copy. The sentence is only true while `CONFIRM_MAIL_INTERVAL_SECONDS` stays at 86400.

@@ -111,6 +111,7 @@ for (const viewport of viewports) {
       const address = uniqueEmail("submit");
       await signUp(page, address, "Alex");
       await expect(page.getByText(address)).toBeVisible();
+      await expect(page.getByText(submitted.hint)).toBeVisible();
       await expect(page.getByRole("heading", { name: submitted.title })).toBeFocused();
       await expectNoSeriousA11yViolations(page);
       await saveScreen(page, `submitted-${viewport.width}`);
