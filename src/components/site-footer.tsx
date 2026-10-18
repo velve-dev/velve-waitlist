@@ -71,11 +71,9 @@ export function SiteFooter() {
             textAnchor="middle"
             textLength="1000"
             lengthAdjust="spacingAndGlyphs"
-            className="font-sans"
+            className="fill-raised stroke-line-strong font-sans"
             fontSize="440"
             fontWeight="600"
-            fill="#0D0D13"
-            stroke="#26242F"
             strokeWidth="1.2"
             vectorEffect="non-scaling-stroke"
           >

@@ -20,7 +20,7 @@
   --ease: cubic-bezier(0.2, 0.6, 0.25, 1);
   --duration-hover: 120ms;
   --duration-fade: 180ms;
-  --pulse-duration: 2600ms;
+  --opacity-disabled: 0.42;
   color-scheme: dark;
 }
 
@@ -88,62 +88,7 @@ input:focus-visible {
   outline: none;
 }
 
-@keyframes velve-type {
-  from {
-    width: 0;
-  }
-  to {
-    width: 20ch;
-  }
-}
-
-@keyframes velve-appear {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes velve-pulse {
-  from {
-    transform: scale(1);
-    stroke-opacity: 0.7;
-  }
-  to {
-    transform: scale(var(--pulse-scale));
-    stroke-opacity: 0;
-  }
-}
-
-.velve-typed {
-  display: inline-block;
-  overflow: hidden;
-  white-space: nowrap;
-  vertical-align: bottom;
-  width: 20ch;
-  animation: velve-type 900ms steps(20, end) 300ms both;
-}
-
-.velve-live {
-  animation: velve-appear 180ms var(--ease) 1600ms both;
-}
-
-.velve-pulse {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: velve-pulse var(--pulse-duration) linear infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .velve-typed,
-  .velve-live,
-  .velve-pulse {
-    animation: none;
-  }
-
-  .velve-pulse {
-    stroke-opacity: 0;
-  }
+:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
 }
