@@ -1,6 +1,9 @@
+import { readdirSync, readFileSync } from "node:fs";
+import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { imprint, privacy } from "../../src/content/legal";
-import { brevoMockUrl, e2eHealthToken } from "../support/e2e-env";
+import { mockApiKey } from "../support/brevo-mock";
+import { brevoMockUrl, e2eHealthToken, e2eWebhookSecret } from "../support/e2e-env";
 import {
   expectNoSeriousA11yViolations,
   linkFrom,
@@ -89,6 +92,30 @@ test("every page sends the security headers", async ({ request }) => {
     expect(headers["set-cookie"], path).toBeUndefined();
     expect(headers["x-powered-by"], path).toBeUndefined();
   }
+});
+
+test("the client bundle carries no server configuration", () => {
+  const bundle = path.resolve(import.meta.dirname, "../../.next/static");
+  const files = readdirSync(bundle, { recursive: true, withFileTypes: true })
+    .filter((entry) => entry.isFile())
+    .map((entry) => path.join(entry.parentPath, entry.name));
+  expect(files.length).toBeGreaterThan(0);
+  const serverOnly = [
+    "BREVO_",
+    "TOKEN_KEY",
+    "RATE_LIMIT_SALT_SECRET",
+    "HEALTH_TOKEN",
+    mockApiKey,
+    e2eWebhookSecret,
+    e2eHealthToken,
+  ];
+  const leaks = files.flatMap((file) => {
+    const content = readFileSync(file, "latin1");
+    return serverOnly
+      .filter((value) => content.includes(value))
+      .map((value) => `${path.relative(bundle, file)}: ${value}`);
+  });
+  expect(leaks).toEqual([]);
 });
 
 test("each response gets a fresh nonce", async ({ request }) => {

@@ -30,7 +30,7 @@ beforeEach(() => {
   state.mails.length = 0;
   state.contacts.clear();
   state.requests.length = 0;
-  state.failNext = 0;
+  state.failures.length = 0;
 });
 
 describe("BrevoClient", () => {
@@ -79,7 +79,7 @@ describe("BrevoClient", () => {
   });
 
   it("turns upstream failures into stable codes", async () => {
-    state.failNext = 1;
+    state.failures.push({ matching: null, remaining: 1 });
     await expect(client().checkList(7)).rejects.toEqual(new BrevoError("upstream_status_503"));
     await expect(client("wrong-key-0000000000").checkList(7)).rejects.toEqual(
       new BrevoError("upstream_status_401"),

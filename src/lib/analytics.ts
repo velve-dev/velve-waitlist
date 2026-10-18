@@ -1,5 +1,6 @@
 // Sends cookieless Umami events with token paths stripped.
-type AnalyticsEvent = "signup_submitted" | "signup_confirmed";
+export const analyticsEvents = ["signup_submitted", "signup_confirmed"] as const;
+type AnalyticsEvent = (typeof analyticsEvents)[number];
 type UmamiPayload = Record<string, unknown>;
 type Umami = { track: (build: (payload: UmamiPayload) => UmamiPayload) => unknown };
 

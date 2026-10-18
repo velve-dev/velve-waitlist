@@ -105,3 +105,9 @@ The Next.js proxy creates a fresh nonce per request and sends `script-src 'self'
 **Status:** accepted, 2026-10-18
 
 `GET /api/health` answers 200 with `status`, `service` and `timestamp` and touches nothing else, so the container health check never flaps with Brevo. `GET /api/health/detailed` needs `Authorization: Bearer <HEALTH_TOKEN>`, checks the configuration and that the Brevo list is reachable within 2 seconds, and reports `ok`, `degraded` (200) or `error` (503 for an invalid configuration). It names no host, key or upstream.
+
+## ADR 16: The image check runs in CI, not in `pnpm verify`
+
+**Status:** accepted, 2026-10-18
+
+The brief asks `pnpm verify` to run every gate, and G13 allows the image check to run only in CI where no Docker daemon is available locally. `pnpm docker:check` builds the image, starts it and waits for a healthy `HEALTHCHECK`, which needs a Docker daemon and takes minutes. Making it part of `pnpm verify` would block every push from a machine without Docker and slow the pre-push hook for no gain on most changes. CI therefore runs it as its own job on every push to `main`, next to `pnpm verify`, and the deploy workflow only starts when both jobs are green. Anyone changing `Dockerfile.dokploy`, `.dockerignore` or the build output runs `pnpm docker:check` locally before pushing.

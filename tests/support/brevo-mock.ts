@@ -14,8 +14,7 @@ export type MockState = {
   mails: MockMail[];
   contacts: Map<string, { listIds: number[]; attributes: Record<string, unknown> }>;
   umamiEvents: unknown[];
-  failNext: number;
-  failMatching: string | null;
+  failures: { matching: string | null; remaining: number }[];
   requests: { method: string; path: string }[];
 };
 
@@ -85,8 +84,10 @@ async function route(state: MockState, request: IncomingMessage, response: Serve
     return;
   }
   if (url.pathname === "/__mock/fail") {
-    state.failNext = Number(url.searchParams.get("count") ?? "1");
-    state.failMatching = url.searchParams.get("matching");
+    state.failures.push({
+      matching: url.searchParams.get("matching"),
+      remaining: Number(url.searchParams.get("count") ?? "1"),
+    });
     send(response, 200, { ok: true });
     return;
   }
@@ -94,12 +95,15 @@ async function route(state: MockState, request: IncomingMessage, response: Serve
   state.requests.push({ method, path: url.pathname });
   if (request.headers["api-key"] !== mockApiKey)
     return send(response, 401, { code: "unauthorized" });
-  const matchesFailure =
-    state.failMatching === null ||
-    decodeURIComponent(url.pathname).includes(state.failMatching) ||
-    raw.includes(state.failMatching);
-  if (state.failNext > 0 && matchesFailure) {
-    state.failNext -= 1;
+  const failure = state.failures.find(
+    ({ matching, remaining }) =>
+      remaining > 0 &&
+      (matching === null ||
+        decodeURIComponent(url.pathname).includes(matching) ||
+        raw.includes(matching)),
+  );
+  if (failure !== undefined) {
+    failure.remaining -= 1;
     return send(response, 503, { code: "unavailable" });
   }
 
@@ -159,8 +163,7 @@ export function startBrevoMock(port: number): Promise<{ server: Server; state: M
     mails: [],
     contacts: new Map(),
     umamiEvents: [],
-    failNext: 0,
-    failMatching: null,
+    failures: [],
     requests: [],
   };
   const server = createServer((request, response) => {

@@ -164,6 +164,22 @@ for (const viewport of viewports) {
       await saveScreen(page, `not-found-${viewport.width}`);
     });
 
+    test("server error", async ({ page }) => {
+      const email = uniqueEmail(`broken${viewport.width}`);
+      await signUp(page, email);
+      const link = linkFrom(
+        await waitForMail(email, "Confirm your spot on the Velve waitlist"),
+        "/confirm",
+      );
+      await fetch(`${brevoMockUrl}/__mock/fail?count=1&matching=${encodeURIComponent(email)}`);
+      await page.goto(link);
+      await expect(page.getByRole("heading", { name: serverError.title })).toBeVisible();
+      await expect(page.getByText(serverError.body)).toBeVisible();
+      await expect(page.getByRole("link", { name: serverError.back })).toBeVisible();
+      await expectNoSeriousA11yViolations(page);
+      await saveScreen(page, `server-error-${viewport.width}`);
+    });
+
     test("unsubscribe question", async ({ page }) => {
       const email = uniqueEmail(`ask${viewport.width}`);
       await signUp(page, email);

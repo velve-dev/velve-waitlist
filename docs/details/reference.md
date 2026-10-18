@@ -46,7 +46,7 @@ Every key is listed in `.env.example` without a value. Secrets have no default a
 | `POST /api/webhooks/brevo`                     | Brevo unsubscribe webhooks, bearer token required.                                                      |
 | `GET /api/health`                              | Liveness, no dependencies.                                                                              |
 | `GET /api/health/detailed`                     | Configuration and Brevo reachability, bearer token required.                                            |
-| `GET /stats/script.js`, `POST /stats/api/send` | Umami relay on our own origin.                                                                          |
+| `GET /stats/script.js`, `POST /stats/api/send` | Umami relay on our own origin. Relays only page views and the two sign-up events, without properties.   |
 | `GET /imprint`, `GET /privacy`                 | Legal pages.                                                                                            |
 | `GET /robots.txt`                              | Disallows everything while the site is not indexable.                                                   |
 
@@ -70,4 +70,4 @@ Every key is listed in `.env.example` without a value. Secrets have no default a
 
 Logs are JSON lines with `time`, `event` and sometimes `code`. They never contain an address, name, IP or token.
 
-`signup_accepted`, `signup_suppressed` (`bot_check`, `address_interval`), `signup_rate_limited`, `send_cap_reached`, `confirm_mail_sent`, `confirm_mail_failed`, `contact_confirmed`, `contact_already_listed`, `confirm_link_invalid`, `welcome_mail_sent`, `welcome_mail_failed`, `contact_deleted` (`link`, `webhook`), `unsubscribe_link_invalid`, `webhook_rejected`, `webhook_processed`, `link_rate_limited` (`links`, `webhook`), `config_invalid` (names of invalid keys), `upstream_failed`, `unexpected_error`.
+`signup_accepted`, `signup_suppressed` (`bot_check`, `address_interval`), `signup_rate_limited`, `send_cap_reached`, `confirm_mail_sent`, `confirm_mail_failed`, `contact_confirmed`, `contact_already_listed`, `confirm_link_invalid`, `welcome_mail_sent`, `welcome_mail_failed`, `contact_deleted` (`link`, `webhook`), `unsubscribe_link_invalid`, `webhook_rejected`, `webhook_processed`, `link_rate_limited` (`links`, `webhook`), `config_invalid` (names of invalid keys), `upstream_failed` (`analytics_script_failed`, `analytics_send_failed`), `unexpected_error`.
