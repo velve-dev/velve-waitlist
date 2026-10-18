@@ -6,16 +6,16 @@ This is the visual specification for the Velve waitlist, derived from the design
 
 The design source is not part of this repository. It sits in two claude.ai artifacts behind the owner's login:
 
-| Artifact | Files |
-| --- | --- |
+| Artifact                                                                            | Files                                                                                                                     |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | Design canvas "Velve waitlist", `https://claude.ai/artifact/RiCajpGtPrQFoJWzxT2yjJ` | `project/Main.dc.html`, `project/Footer.dc.html`, `project/Legal.dc.html`, `project/Email.dc.html`, `project/canvas.json` |
-| Velve Design System, `https://claude.ai/artifact/K56a2VENtSLKy3Tf3ghZ67` | `project/tokens.json`, `project/assets/logo-mark.svg`, `project/README.md` |
+| Velve Design System, `https://claude.ai/artifact/K56a2VENtSLKy3Tf3ghZ67`            | `project/tokens.json`, `project/assets/logo-mark.svg`, `project/README.md`                                                |
 
 An agent with the Artifact tool reads them with `action: "read"`, the `url` above and the paths as `paths`, and saves them under `docs/design/source/`, which git ignores. Nothing from that folder is committed: the source carries unreleased product detail and internal notes. Only [`tokens.json`](tokens.json) and [`logo-mark.svg`](logo-mark.svg) are committed copies.
 
 A `.dc.html` file is a design template, not production code to copy. It is plain HTML with inline styles, `{{placeholders}}`, `<sc-if>` conditions and a `Component` class whose `renderVals()` returns the values. Read a state by setting `state` and `mobile`, working out `renderVals()` and substituting the placeholders.
 
-PNG exports of the artboards may be placed in `docs/design/reference/` for visual comparison. That folder is ignored as well. Screenshots of the build live in [`screens/`](screens/).
+PNG exports of the artboards may be placed in `docs/design/reference/` for visual comparison. That folder is ignored as well.
 
 ## Breakpoint
 
@@ -23,23 +23,23 @@ One breakpoint at **720 px**. Below it the mobile layout applies, from 720 px up
 
 ## Tokens
 
-| Token | Value | Use |
-| --- | --- | --- |
-| `bg-base` | `#050509` | Page |
-| `surface-card` | `#09090D` | Cards, inputs, icon tiles, secondary buttons |
-| `surface-raised` | `#0D0D13` | Footer wordmark fill |
-| `surface-hover` | `#121218` | Secondary button hover |
-| `border-default` | `#1A1922` | Every hairline |
-| `border-strong` | `#26242F` | Secondary button border, hover border, wordmark stroke |
-| `text-primary` | `#F1F0F4` | Text |
-| `text-muted` | `#8B8797` | Secondary text |
-| `text-faint` | `#67637A` | Placeholders and fine print only |
-| `text-link` | `#B8A6FF` | Links, link hover |
-| `accent` | `#7B5CFF` | Primary button, focus border, ring, submitted dot. Nothing else |
-| `status-live` | `#3FAF6B` | Live dot, success icons |
-| `status-warning` | `#F5A623` | Rate limit message |
-| `status-failed` | `#F0554C` | Validation error |
-| `ring` | `0 0 0 2px rgba(123,92,255,0.55)` | Focus ring |
+| Token            | Value                             | Use                                                             |
+| ---------------- | --------------------------------- | --------------------------------------------------------------- |
+| `bg-base`        | `#050509`                         | Page                                                            |
+| `surface-card`   | `#09090D`                         | Cards, inputs, icon tiles, secondary buttons                    |
+| `surface-raised` | `#0D0D13`                         | Footer wordmark fill                                            |
+| `surface-hover`  | `#121218`                         | Secondary button hover                                          |
+| `border-default` | `#1A1922`                         | Every hairline                                                  |
+| `border-strong`  | `#26242F`                         | Secondary button border, hover border, wordmark stroke          |
+| `text-primary`   | `#F1F0F4`                         | Text                                                            |
+| `text-muted`     | `#8B8797`                         | Secondary text                                                  |
+| `text-faint`     | `#67637A`                         | Placeholders and fine print only                                |
+| `text-link`      | `#B8A6FF`                         | Links, link hover                                               |
+| `accent`         | `#7B5CFF`                         | Primary button, focus border, ring, submitted dot. Nothing else |
+| `status-live`    | `#3FAF6B`                         | Live dot, success icons                                         |
+| `status-warning` | `#F5A623`                         | Rate limit message                                              |
+| `status-failed`  | `#F0554C`                         | Validation error                                                |
+| `ring`           | `0 0 0 2px rgba(123,92,255,0.55)` | Focus ring                                                      |
 
 Type sizes are a closed set: 12, 13, 14, 16, 20, 28, 40 px. Geist for UI, Geist Mono for technical values and never below 12 px. Radius 12 px for containers and controls, 8 px for the pill and the desktop button. Disabled is opacity 0.42 with `cursor: not-allowed`. No shadows on cards, no emoji, no exclamation marks, sentence case.
 
@@ -59,7 +59,7 @@ All transitions use `cubic-bezier(.2,.6,.25,1)`: 120 ms for hover and focus, 180
 
 ## Waitlist page
 
-**Pill:** inline-flex, gap 8, height 32, padding `0 12px`, radius 8, card fill, hairline border, Geist Mono 12 px weight 500, tracking -0.01em. `$` faint, command primary, `live` in status-live with a 10 px dot and 6 px gap. Hidden from screen readers.
+**Pill:** inline-flex, gap 8, height 32, padding `0 12px`, radius 8, card fill, hairline border, Geist Mono 12 px weight 500, tracking -0.01em. `$` faint, command primary, `live` in status-live with a 6 px dot (radius 3 in a 10 px box) and 6 px gap. Hidden from screen readers.
 
 **Heading block:** gap 12. `h1` 40 px, weight 600, line height 1.1, tracking -0.025em. Subline 16 px, weight 400, line height 1.5, muted.
 
@@ -74,15 +74,15 @@ All transitions use `cubic-bezier(.2,.6,.25,1)`: 120 ms for hover and focus, 180
 
 **Result tiles** (submitted, confirmed, already in): column, gap 8. Tile 56 × 56, radius 12, card fill, hairline, 16 px below it, icon 22 px with 2 px stroke. Title 20 px weight 600 line height 1.35 tracking -0.01em. Text 14 px weight 400 line height 1.55 muted.
 
-| State | Icon | Notes |
-| --- | --- | --- |
-| Empty | none | Button disabled |
-| Focus | none | Email focused, accent border and ring |
-| Error | none | Values kept, red border, message, focus back to the email |
-| Rate limited | none | Amber message, neutral fields, button disabled |
-| Submitted | Lucide `mail`, primary | 14 px accent dot top right (-5 px) with 2 px `#050509` stroke and pulse. Address in Geist Mono 13 px primary. `Typo?` is a link-coloured underlined button that resets the form and focuses the email |
-| Confirmed | Lucide `check`, live green | Threads and GitHub secondary buttons, padding-top 16 |
-| Already in | Lucide `check-check`, live green | |
+| State        | Icon                             | Notes                                                                                                                                                                                                                           |
+| ------------ | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Empty        | none                             | Button disabled                                                                                                                                                                                                                 |
+| Focus        | none                             | Email focused, accent border and ring                                                                                                                                                                                           |
+| Error        | none                             | Values kept, red border, message, focus back to the email                                                                                                                                                                       |
+| Rate limited | none                             | Amber message, neutral fields, button disabled                                                                                                                                                                                  |
+| Submitted    | Lucide `mail`, primary           | 10 px accent dot (radius 5 in a 14 px box) top right (-5 px) with 2 px `#050509` stroke and pulse. Address in Geist Mono 13 px primary. `Typo?` is a link-coloured underlined button that resets the form and focuses the email |
+| Confirmed    | Lucide `check`, live green       | Threads and GitHub secondary buttons, padding-top 16                                                                                                                                                                            |
+| Already in   | Lucide `check-check`, live green |                                                                                                                                                                                                                                 |
 
 **Secondary button:** inline-flex, gap 6, height 48 mobile / 40 desktop, padding `0 16px`, radius 12, border `#26242F`, card fill, 14 px weight 500, Lucide `arrow-up-right` 14 px. Hover fill `#121218`.
 
@@ -97,12 +97,12 @@ Unsubscribe confirm, unsubscribed, invalid link, broken confirmation link, 404 a
 - Buttons 48 px mobile / 40 px desktop. The unsubscribe pair sits in a row with gap 8 and padding-top 24, stacked in a column on mobile. Single buttons get margin-top 24.
 - 404 shows the Geist Mono 12 px faint line `404 · not found` above the title. The 500 page uses the same layout.
 
-| Page | Icon |
-| --- | --- |
+| Page                | Icon                |
+| ------------------- | ------------------- |
 | Unsubscribe confirm | Lucide `mail-minus` |
-| Unsubscribed | Lucide `check` |
-| Invalid link | Lucide `unlink` |
-| 404 and 500 | Lucide `search-x` |
+| Unsubscribed        | Lucide `check`      |
+| Invalid link        | Lucide `link-2-off` |
+| 404 and 500         | Lucide `search-x`   |
 
 ## Imprint and privacy
 
@@ -121,7 +121,7 @@ Unsubscribe confirm, unsubscribed, invalid link, broken confirmation link, 404 a
 
 ## Emails
 
-- One column, max 480 px, on `#050509`. Outer padding 64/40 on wide clients, 48/24 on narrow ones. Gap 40 between logo, body and footer, 24 inside the body.
+- One column, max 480 px, on `#050509`. Outer padding 64/40 on wide clients, 48/24 on narrow ones (below 560 px). Gap 40 between logo, body and footer, 24 inside the body.
 - Logo mark 24 px. Update mails start with a Geist Mono 12 px muted line.
 - Title 28 px weight 600. `Hey {GREETING},` 16 px weight 500 primary. Body 16 px weight 400 line height 1.6 muted.
 - Button 48 px high, padding `0 28px`, radius 12, accent fill, white 14 px weight 600, full width on narrow clients.

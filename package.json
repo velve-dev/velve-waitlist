@@ -1,0 +1,47 @@
+{
+  "name": "velve-waitlist",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@12.9.1",
+  "engines": {
+    "node": "24.22.0"
+  },
+  "scripts": {
+    "dev": "NEXT_TELEMETRY_DISABLED=1 next dev --port 8674",
+    "build": "node scripts/check-legal.ts && NEXT_TELEMETRY_DISABLED=1 next build",
+    "start": "next start --port 8674",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint --max-warnings 0 . && knip",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "e2e": "playwright test",
+    "copy:lint": "node scripts/copy-lint.ts",
+    "comments:lint": "node scripts/comments-lint.ts",
+    "secrets:lint": "node scripts/secrets-lint.ts",
+    "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm comments:lint && pnpm secrets:lint && pnpm copy:lint && pnpm test && pnpm build && pnpm e2e"
+  },
+  "dependencies": {
+    "next": "16.3.8",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "24.19.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.3.8",
+    "knip": "6.39.0",
+    "prettier": "3.9.9",
+    "prettier-plugin-tailwindcss": "0.8.1",
+    "tailwindcss": "4.3.3",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.0",
+    "vitest": "5.0.3"
+  }
+}
