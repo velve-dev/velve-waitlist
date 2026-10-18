@@ -7,7 +7,10 @@ import { brokenUnsubscribeLink } from "@/content/copy";
 import { getServices } from "@/server/services";
 import { isValidUnsubscribeToken } from "@/server/unsubscribe";
 
-export const metadata: Metadata = { robots: { index: false, follow: false } };
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+  referrer: "no-referrer",
+};
 
 export default async function UnsubscribePage({ params }: { params: Promise<{ token: string }> }) {
   await connection();

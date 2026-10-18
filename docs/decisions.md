@@ -49,7 +49,7 @@ The app sits behind exactly one Traefik hop, which appends the address it saw. E
 
 **Status:** accepted, 2026-10-18
 
-The brief asks `GET /confirm/<token>` to create the contact. Mail scanners in some corporate inboxes fetch links before the person does, which would confirm on their behalf. A button on the confirmation page would avoid that but adds a step the design does not have. The page keeps the brief's behaviour and records the risk here. The token still proves the address received our mail, and nothing is written for broken, expired or tampered tokens. The page asks Brevo whether the address is already listed before writing, which is how "You're already in" can be told apart from "You're in". Brevo dates are day precision (`yyyy-mm-dd`), as its API requires.
+The brief asks `GET /confirm/<token>` to create the contact. Mail scanners in some corporate inboxes fetch links before the person does, which would confirm on their behalf. A button on the confirmation page would avoid that but adds a step the design does not have. The page keeps the brief's behaviour and records the risk here. The token still proves the address received our mail, and nothing is written for broken, expired or tampered tokens. The page asks Brevo whether the address is already listed before writing, which is how "You're already in" can be told apart from "You're in". A scanner and the person often open the link at the same moment, so while one confirmation for an address is running, further clicks wait for it and get "You're already in"; the contact is written and welcomed once. The pages send no referrer, so a link token never reaches another site. Brevo dates are day precision (`yyyy-mm-dd`), as its API requires.
 
 ## ADR 8: Unsubscribing always deletes, whichever path it takes
 
@@ -74,7 +74,7 @@ Mail clients do not render SVG and block data URIs, so the 24 px logo is a PNG a
 
 **Status:** accepted, 2026-10-18
 
-The browser loads `/stats/script.js` and posts events to `/stats/api/send` on our own origin, so it never talks to another host. The server forwards events to the internal Umami URL with the user agent only, never the client address. Automatic tracking is off. The page sends page views and the two events itself, and replaces `/confirm/<token>` and `/unsubscribe/<token>` with `/confirm` and `/unsubscribe`, so link tokens never reach analytics. Browsers that send Do Not Track are not counted. Without `UMAMI_URL` and `UMAMI_WEBSITE_ID` no script is rendered and both routes answer 404.
+The browser loads `/stats/script.js` and posts events to `/stats/api/send` on our own origin, so it never talks to another host. The server forwards events to the internal Umami URL with the user agent only, never the client address. Automatic tracking is off. The page sends page views and the two events itself, and replaces `/confirm/<token>` and `/unsubscribe/<token>` with `/confirm` and `/unsubscribe`, so link tokens never reach analytics. On any other path, a segment that looks like a token or holds an `@` is reported as `redacted`, which covers mistyped links that land on the 404 page. Browsers that send Do Not Track are not counted. Without `UMAMI_URL` and `UMAMI_WEBSITE_ID` no script is rendered and both routes answer 404.
 
 ## ADR 11: Limit link routes in the proxy
 

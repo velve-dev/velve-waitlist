@@ -5,9 +5,17 @@ type Umami = { track: (build: (payload: UmamiPayload) => UmamiPayload) => unknow
 
 const tokenRoutes = ["/confirm/", "/unsubscribe/"];
 
+const tokenLikeSegment = /^[A-Za-z0-9_-]{24,}$/;
+const addressLikeSegment = /@|%40/i;
+
+function redactSegment(segment: string): string {
+  return tokenLikeSegment.test(segment) || addressLikeSegment.test(segment) ? "redacted" : segment;
+}
+
 export function publicPath(pathname: string): string {
   const tokenRoute = tokenRoutes.find((prefix) => pathname.startsWith(prefix));
-  return tokenRoute === undefined ? pathname : tokenRoute.slice(0, -1);
+  if (tokenRoute !== undefined) return tokenRoute.slice(0, -1);
+  return pathname.split("/").map(redactSegment).join("/");
 }
 
 function tracker(): Umami | undefined {

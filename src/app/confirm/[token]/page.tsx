@@ -11,7 +11,10 @@ import { alreadyIn, brokenConfirmLink, confirmed, links } from "@/content/copy";
 import { confirmSignup } from "@/server/confirm";
 import { getServices } from "@/server/services";
 
-export const metadata: Metadata = { robots: { index: false, follow: false } };
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+  referrer: "no-referrer",
+};
 
 export default async function ConfirmPage({ params }: { params: Promise<{ token: string }> }) {
   await connection();

@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, MailMinus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { formErrors, unsubscribe, unsubscribed } from "@/content/copy";
 import { MessageBody } from "./message-body";
 import { SecondaryLink } from "./secondary-link";
@@ -21,10 +21,16 @@ async function requestDeletion(token: string): Promise<boolean> {
 
 export function UnsubscribePrompt({ token }: { token: string }) {
   const [step, setStep] = useState<Step>("asking");
+  const doneTitle = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    if (step === "done") doneTitle.current?.focus();
+  }, [step]);
 
   if (step === "done") {
     return (
       <MessageBody
+        titleRef={doneTitle}
         icon={<Check size={22} strokeWidth={2} />}
         tone="live"
         title={unsubscribed.title}

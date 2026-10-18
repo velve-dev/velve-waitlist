@@ -51,8 +51,15 @@ test("sign up, confirm twice, then unsubscribe and get deleted", async ({ page }
   await page.goto(linkFrom(welcome, "/unsubscribe"));
   await expect(page.getByRole("heading", { name: unsubscribe.title })).toBeVisible();
   await page.getByRole("button", { name: unsubscribe.confirm }).click();
-  await expect(page.getByRole("heading", { name: unsubscribed.title })).toBeVisible();
+  await expect(page.getByRole("heading", { name: unsubscribed.title })).toBeFocused();
   expect(await contactExists(email)).toBe(false);
+});
+
+test("link pages send no referrer to other sites", async ({ page }) => {
+  for (const path of ["/confirm/broken-token", "/unsubscribe/broken-token"]) {
+    await page.goto(path);
+    await expect(page.locator('meta[name="referrer"]')).toHaveAttribute("content", "no-referrer");
+  }
 });
 
 test("one-click unsubscribe deletes without a question", async ({ page, request }) => {

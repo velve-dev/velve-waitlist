@@ -78,6 +78,19 @@ describe("confirmSignup", () => {
   });
 });
 
+describe("confirmSignup under concurrent clicks", () => {
+  it("lists and welcomes once when the same link is opened twice at once", async () => {
+    const { services, token } = setup();
+    const outcomes = await Promise.all([
+      confirmSignup(token(), services),
+      confirmSignup(token(), services),
+    ]);
+    await Promise.all(services.deferred);
+    expect(outcomes.map((outcome) => outcome.kind).sort()).toEqual(["alreadyListed", "confirmed"]);
+    expect(services.brevo.sent).toHaveLength(1);
+  });
+});
+
 describe("handleUnsubscribe", () => {
   it("deletes the contact behind a valid link", async () => {
     const { services } = setup();

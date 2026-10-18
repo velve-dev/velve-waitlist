@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 import { IconTile } from "./icon-tile";
 import { contactEmail } from "@/content/copy";
 
@@ -11,7 +11,15 @@ export type MessageBodyProps = {
   children?: ReactNode;
 };
 
-export function MessageBody({ icon, tone, eyebrow, title, body, children }: MessageBodyProps) {
+export function MessageBody({
+  icon,
+  tone,
+  eyebrow,
+  title,
+  body,
+  children,
+  titleRef,
+}: MessageBodyProps & { titleRef?: Ref<HTMLHeadingElement> }) {
   return (
     <div className="flex min-h-[440px] w-full max-w-[460px] flex-col items-center justify-center gap-2 text-center desk:min-h-[520px]">
       <IconTile tone={tone} spacing="page">
@@ -22,7 +30,13 @@ export function MessageBody({ icon, tone, eyebrow, title, body, children }: Mess
           {eyebrow}
         </span>
       )}
-      <h1 className="m-0 text-28 leading-[1.2] font-semibold tracking-[-0.02em]">{title}</h1>
+      <h1
+        ref={titleRef}
+        tabIndex={titleRef === undefined ? undefined : -1}
+        className="m-0 text-28 leading-[1.2] font-semibold tracking-[-0.02em] focus:outline-none"
+      >
+        {title}
+      </h1>
       <p className="m-0 text-16 leading-[1.55] text-muted">
         <WithContactLink text={body} />
       </p>

@@ -3,7 +3,7 @@ import "server-only";
 import { buildWelcomeMail, siteLinks } from "../../emails/mails.ts";
 import { greetingFor } from "@/lib/name";
 import { BrevoError } from "./brevo";
-import { createUnsubscribeToken, readConfirmToken } from "./link-tokens";
+import { createUnsubscribeToken, readConfirmToken, type SignupClaim } from "./link-tokens";
 import { logEvent } from "./log";
 import type { Services } from "./services";
 
@@ -14,6 +14,8 @@ function brevoDate(time: number): string {
   return new Date(time).toISOString().slice(0, 10);
 }
 
+const confirmationsInFlight = new Map<string, Promise<ConfirmOutcome>>();
+
 export async function confirmSignup(token: string, services: Services): Promise<ConfirmOutcome> {
   const { config } = services;
   const now = services.now();
@@ -23,6 +25,27 @@ export async function confirmSignup(token: string, services: Services): Promise<
     return { kind: "invalidLink" };
   }
 
+  const running = confirmationsInFlight.get(claim.email);
+  if (running !== undefined) {
+    await running;
+    logEvent("contact_already_listed");
+    return { kind: "alreadyListed" };
+  }
+  const confirmation = listContact(claim, now, services);
+  confirmationsInFlight.set(claim.email, confirmation);
+  try {
+    return await confirmation;
+  } finally {
+    confirmationsInFlight.delete(claim.email);
+  }
+}
+
+async function listContact(
+  claim: SignupClaim,
+  now: number,
+  services: Services,
+): Promise<ConfirmOutcome> {
+  const { config } = services;
   if (await services.brevo.isOnList(claim.email, config.brevo.listId)) {
     logEvent("contact_already_listed");
     return { kind: "alreadyListed" };

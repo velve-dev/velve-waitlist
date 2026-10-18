@@ -12,4 +12,12 @@ describe("publicPath", () => {
     expect(publicPath("/privacy")).toBe("/privacy");
     expect(publicPath("/unsubscribed")).toBe("/unsubscribed");
   });
+
+  it("hides tokens and addresses on paths that miss a route", () => {
+    const token = `${"A".repeat(30)}${"_-b9".repeat(10)}`;
+    expect(publicPath(`/Confirm/${token}`)).toBe("/Confirm/redacted");
+    expect(publicPath(`//confirm/${token}`)).toBe("//confirm/redacted");
+    expect(publicPath("/someone@company.com")).toBe("/redacted");
+    expect(publicPath("/someone%40company.com/x")).toBe("/redacted/x");
+  });
 });
