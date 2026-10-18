@@ -24,7 +24,8 @@
     "emails:check": "node scripts/emails-check.ts",
     "emails:build": "node scripts/emails-check.ts --write",
     "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm comments:lint && pnpm secrets:lint && pnpm copy:lint && pnpm test && pnpm emails:check && pnpm build && pnpm e2e",
-    "assets:build": "node scripts/render-assets.ts"
+    "assets:build": "node scripts/render-assets.ts",
+    "docker:check": "sh scripts/docker-check.sh"
   },
   "dependencies": {
     "lucide-react": "1.52.0",

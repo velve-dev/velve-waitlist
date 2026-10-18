@@ -1,0 +1,16 @@
+.env
+.env.*
+.git
+.github
+.githooks
+.claude
+.next
+node_modules
+coverage
+playwright-report
+test-results
+blob-report
+docs
+*.tsbuildinfo
+next-env.d.ts
+Dockerfile.dokploy
