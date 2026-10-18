@@ -17,3 +17,4 @@ next-env.d.ts
 docs/design/source/
 docs/design/reference/
 .claude/settings.local.json
+.claude/worktrees/

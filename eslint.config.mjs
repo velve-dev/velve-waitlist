@@ -29,6 +29,7 @@ export default defineConfig([
     rules: { "no-console": "off" },
   },
   globalIgnores([
+    ".claude/**",
     ".next/**",
     "out/**",
     "build/**",

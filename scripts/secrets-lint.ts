@@ -14,7 +14,7 @@ const secretPatterns: [string, RegExp][] = [
   ["JSON web token", /\beyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\./],
   [
     "hard-coded secret",
-    /(?:secret|token|password|passwd|api_?key)[A-Za-z0-9_]*["']?\s*[:=]\s*["'`][A-Za-z0-9+/_.=-]{20,}["'`]/i,
+    /(?:secret|token|password|passwd|api_?key)[A-Za-z0-9_]*["']?\s*[:=]\s*["'`](?!test-)[A-Za-z0-9+/_.=-]{20,}["'`]/i,
   ],
   ["webhook URL with credentials", /https?:\/\/[^\s/:@]+:[^\s/@]+@/],
 ];

@@ -13,6 +13,7 @@
   --text-on-accent: #ffffff;
   --text-link: #b8a6ff;
   --accent: #7b5cff;
+  --accent-fill: #7656fa;
   --status-live: #3faf6b;
   --status-warning: #f5a623;
   --status-failed: #f0554c;
@@ -21,6 +22,7 @@
   --duration-hover: 120ms;
   --duration-fade: 180ms;
   --opacity-disabled: 0.42;
+  --pulse-duration: 2600ms;
   color-scheme: dark;
 }
 
@@ -38,6 +40,7 @@
   --color-on-accent: var(--text-on-accent);
   --color-link: var(--text-link);
   --color-accent: var(--accent);
+  --color-accent-fill: var(--accent-fill);
   --color-live: var(--status-live);
   --color-warning: var(--status-warning);
   --color-failed: var(--status-failed);
@@ -91,4 +94,72 @@ input:focus-visible {
 :disabled {
   opacity: var(--opacity-disabled);
   cursor: not-allowed;
+}
+
+@keyframes velve-type {
+  from {
+    width: 0;
+  }
+  to {
+    width: 20ch;
+  }
+}
+
+@keyframes velve-appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes velve-pulse {
+  from {
+    transform: scale(1);
+    stroke-opacity: 0.7;
+  }
+  to {
+    transform: scale(var(--pulse-scale));
+    stroke-opacity: 0;
+  }
+}
+
+.velve-typed {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  vertical-align: bottom;
+  width: 20ch;
+  animation: velve-type 900ms steps(20, end) 300ms both;
+}
+
+.velve-live {
+  animation: velve-appear var(--duration-fade) var(--ease) 1600ms both;
+}
+
+.velve-pulse-live {
+  --pulse-scale: 2.6667;
+}
+
+.velve-pulse-accent {
+  --pulse-scale: 2.2;
+}
+
+.velve-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: velve-pulse var(--pulse-duration) linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .velve-typed,
+  .velve-live,
+  .velve-pulse {
+    animation: none;
+  }
+
+  .velve-pulse {
+    stroke-opacity: 0;
+  }
 }

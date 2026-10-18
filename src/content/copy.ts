@@ -33,3 +33,35 @@ export const footer = {
   copyright: "© 2026 Levo Studio",
   wordmark: "velve",
 } as const;
+
+export const pill = {
+  prompt: "$",
+  command: "git push origin main",
+  live: "live",
+} as const;
+
+export const form = {
+  label: "Join the waitlist",
+  nameLabel: "First name, optional",
+  emailLabel: "Email",
+  namePlaceholderMobile: "First name (optional)",
+  namePlaceholderDesktop: "First name",
+  emailPlaceholder: "you@company.com",
+  submit: "Join the waitlist",
+  finePrint: "First name is optional. An update every few weeks, unsubscribe any time.",
+  privacy: "Privacy",
+} as const;
+
+export const formErrors = {
+  missing: "Email is missing. Enter an address to join.",
+  noAt: "This address has no @. Add it before the domain.",
+  noDomainEnding: "This address has no domain ending. Add one, like .com or .de.",
+  rateLimited: "Easy there. Too many tries from this network, give it a few minutes.",
+  failed: "That didn't go through. Try again in a moment.",
+} as const;
+
+export const submitted = {
+  title: "Check your inbox",
+  body: "Click the link we've sent to {email}. Typo?",
+  typo: "Typo?",
+} as const;

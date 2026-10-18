@@ -7,3 +7,4 @@ coverage/
 docs/design/source/
 docs/design/reference/
 docs/design/tokens.json
+.claude/worktrees/
