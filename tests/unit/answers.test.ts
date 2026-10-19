@@ -1,14 +1,16 @@
 import { randomBytes } from "node:crypto";
 import type { Server } from "node:http";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { readAnswers } from "@/lib/questions";
 import { handleAnswers } from "@/server/answers";
 import { BrevoClient } from "@/server/brevo";
 import {
   createConfirmToken,
+  createFormToken,
   createQuestionsToken,
   createUnsubscribeToken,
   readConfirmToken,
+  readFormTokenIssuedAt,
   readQuestionsToken,
   readUnsubscribeToken,
 } from "@/server/link-tokens";
@@ -58,6 +60,14 @@ describe("token purposes", () => {
     );
     expect(readUnsubscribeToken(legacyUnsubscribe, key)).toBe("alex@company.com");
     expect(readConfirmToken(legacyConfirm, key, now, 60)?.email).toBe("alex@company.com");
+    expect(readFormTokenIssuedAt(sealToken("form", { t: now }, key), key)).toBe(now);
+  });
+
+  it("keeps form tokens out of every address purpose", () => {
+    const form = createFormToken(now, key);
+    expect(readQuestionsToken(form, key)).toBeNull();
+    expect(readUnsubscribeToken(form, key)).toBeNull();
+    expect(readFormTokenIssuedAt(createQuestionsToken("alex@company.com", key), key)).toBeNull();
   });
 
   it("refuses a payload that names another purpose", () => {
@@ -127,6 +137,30 @@ describe("handleAnswers", () => {
       body: await kept.text(),
     });
     expect(services.brevo.updated.has("gone@company.com")).toBe(false);
+  });
+
+  it("makes the same Brevo round trips for a deleted contact as for a stored one", async () => {
+    const { services, tokenFor } = setup();
+    services.brevo.listed.set("kept@company.com", {});
+    const calls: string[] = [];
+    const { updateContact, contactAttributes } = services.brevo;
+    services.brevo.updateContact = (email, attributes) => {
+      calls.push("update");
+      return updateContact(email, attributes);
+    };
+    services.brevo.contactAttributes = (email) => {
+      calls.push("read");
+      return contactAttributes(email);
+    };
+    const vote = (email: string) =>
+      handleAnswers(
+        answerRequest({ token: tokenFor(email), firstDeploy: "api", runsOn: "paas" }),
+        services,
+      );
+    await vote("kept@company.com");
+    const keptCalls = calls.splice(0);
+    await vote("gone@company.com");
+    expect(calls).toEqual(keptCalls);
   });
 
   it("rejects broken tokens and answers outside the allowlist", async () => {
@@ -227,5 +261,69 @@ describe("Brevo contact update", () => {
     );
     expect(response.status).toBe(500);
     expect(await response.json()).toEqual({ error: "failed" });
+  });
+
+  it("logs only the event and the attribute error code", async () => {
+    const services = testServices({ now: () => now });
+    services.brevo = Object.assign(services.brevo, {
+      updateContact: brevo().updateContact.bind(brevo()),
+      contactAttributes: brevo().contactAttributes.bind(brevo()),
+    });
+    state.contacts.set("quiet@company.com", { listIds: [7], attributes: {} });
+    state.missingAttributes.push({ matching: "quiet@", names: ["RUNS_ON"] });
+    const token = createQuestionsToken("quiet@company.com", services.config.tokenKey);
+    const lines: string[] = [];
+    const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk) => {
+      lines.push(String(chunk));
+      return true;
+    });
+    try {
+      await handleAnswers(
+        answerRequest({ token, firstDeploy: "side_project", runsOn: "hyperscaler" }),
+        services,
+      );
+    } finally {
+      spy.mockRestore();
+    }
+    const entries = lines.map((line) => JSON.parse(line) as Record<string, unknown>);
+    expect(entries.map(({ event, code }) => ({ event, code }))).toEqual([
+      { event: "answers_failed", code: "answers_attribute_missing" },
+    ]);
+    const output = lines.join("");
+    for (const secret of ["quiet", token, "side_project", "hyperscaler", "203.0.113"]) {
+      expect(output).not.toContain(secret);
+    }
+  });
+
+  it("logs only the event and the attribute error code", async () => {
+    const services = testServices({ now: () => now });
+    services.brevo = Object.assign(services.brevo, {
+      updateContact: brevo().updateContact.bind(brevo()),
+      contactAttributes: brevo().contactAttributes.bind(brevo()),
+    });
+    state.contacts.set("quiet@company.com", { listIds: [7], attributes: {} });
+    state.missingAttributes.push({ matching: "quiet@", names: ["RUNS_ON"] });
+    const token = createQuestionsToken("quiet@company.com", services.config.tokenKey);
+    const lines: string[] = [];
+    const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk) => {
+      lines.push(String(chunk));
+      return true;
+    });
+    try {
+      await handleAnswers(
+        answerRequest({ token, firstDeploy: "side_project", runsOn: "hyperscaler" }),
+        services,
+      );
+    } finally {
+      spy.mockRestore();
+    }
+    const entries = lines.map((line) => JSON.parse(line) as Record<string, unknown>);
+    expect(entries.map(({ event, code }) => ({ event, code }))).toEqual([
+      { event: "answers_failed", code: "answers_attribute_missing" },
+    ]);
+    const output = lines.join("");
+    for (const secret of ["quiet", token, "side_project", "hyperscaler", "203.0.113"]) {
+      expect(output).not.toContain(secret);
+    }
   });
 });

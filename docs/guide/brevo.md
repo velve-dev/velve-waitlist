@@ -20,7 +20,7 @@ Brevo holds the list and sends every mail. This page records how the account loo
 2. **Transactional emails › Tracking › Anonymous email tracking:** set to **Yes**.
 3. **Transactional emails › Retention rules:** choose the shortest duration and **Never store previews**.
 4. **Contacts › Lists:** create the list "Velve waitlist" and note its ID for `BREVO_LIST_ID`.
-5. **Contacts › Settings › Contact attributes:** create `GREETING` (text), `SIGNUP_AT` (date), `CONFIRMED_AT` (date) and `CONSENT_VERSION` (text). `FIRSTNAME` already exists.
+5. **Contacts › Settings › Contact attributes:** create `GREETING` (text), `SIGNUP_AT` (date), `CONFIRMED_AT` (date), `CONSENT_VERSION` (text), `FIRST_DEPLOY` (text), `RUNS_ON` (text) and `ANSWERED_AT` (date). Until the last three exist, votes on the two optional questions fail with `answers_attribute_missing`. `FIRSTNAME` already exists.
 6. **SMTP & API › API keys:** create a key with the smallest scope that covers contacts and transactional emails, with an expiry date, and put it into `BREVO_API_KEY`. Then add the outgoing addresses of the Levo servers under **Security › Authorized IPs** and turn on blocking for API keys.
 7. **Unsubscribe page:** create a custom unsubscribe page and set its confirmation to redirect to `https://velve.dev/unsubscribed`. Use it in every campaign.
 8. **Webhooks:** create two webhooks to `https://velve.dev/api/webhooks/brevo`, both with bearer authentication (`"auth": {"type": "bearer", "token": "<BREVO_WEBHOOK_SECRET>"}`):

@@ -53,12 +53,9 @@ export async function handleAnswers(request: Request, services: Services): Promi
     ANSWERED_AT: brevoDate(now),
   };
   try {
-    if ((await services.brevo.updateContact(email, attributes)) === "missing") {
-      logEvent("answers_contact_missing");
-      return accepted();
-    }
+    const update = await services.brevo.updateContact(email, attributes);
     const stored = await services.brevo.contactAttributes(email);
-    if (stored === null) {
+    if (update === "missing" || stored === null) {
       logEvent("answers_contact_missing");
       return accepted();
     }
