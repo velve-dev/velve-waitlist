@@ -19,6 +19,7 @@ export type LogEvent =
   | "webhook_rejected"
   | "webhook_processed"
   | "link_rate_limited"
+  | "server_action_probe"
   | "answers_saved"
   | "answers_contact_missing"
   | "answers_rejected"

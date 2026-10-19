@@ -285,3 +285,18 @@ for (const viewport of viewports) {
     await saveScreen(page, `privacy-${viewport.width}`);
   });
 }
+
+test("server action probes are turned away before they reach Next", async ({ request }) => {
+  for (const path of ["/", "/privacy", "/api/health", "/missing"]) {
+    const response = await request.post(path, {
+      headers: { "next-action": "y", "content-type": "text/plain;charset=UTF-8" },
+      data: "[]",
+    });
+    expect(response.status()).toBe(404);
+    expect(await response.text()).toBe("");
+    const headers = response.headers();
+    expect(headers["content-security-policy"]).toContain("default-src 'none'");
+    expect(headers["x-content-type-options"]).toBe("nosniff");
+    expect(headers["cache-control"]).toBe("no-store");
+  }
+});

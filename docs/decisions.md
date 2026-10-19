@@ -149,3 +149,9 @@ Velve wants to know what people would deploy first and where it runs today. The 
 - **Equal treatment:** a vote for a contact that no longer exists does the same Brevo round trips and gets the same answer as a stored one, so the endpoint cannot tell whether an address is still on the list.
 - **Missing attributes:** Brevo drops attribute names it does not know without an error and ignores values of the wrong type. The server reads the contact back after the update and reports `answers_attribute_missing` when the answers did not land, and the visitor sees the normal error message.
 - **Sharing without tracking:** "Share on Threads" is a plain link to `https://www.threads.com/intent/post?text=…`, the web intent documented by Meta, opened in a new tab with `noopener noreferrer`. Nothing from Threads is loaded on our pages, so G8 stays green. Umami counts a vote as `questions_answered`, without properties.
+
+## ADR 21: Turn away server action probes in the proxy
+
+**Status:** accepted, 2026-10-19
+
+Scanners send `POST` requests with a `Next-Action` header and made-up IDs such as `y`, looking for Next.js server actions. The app has no server actions, so Next answered "Server action not found." and wrote a multi-line error with a stack trace to the log for every probe, which buried the events that matter. The proxy now answers every request that carries the header with an empty 404, the resource policy and `no-store`, before Next sees it, and logs a single `server_action_probe` line without path, address or header values. If the app ever gains a server action, this check has to go first, and the e2e test in `security.spec.ts` will say so.
