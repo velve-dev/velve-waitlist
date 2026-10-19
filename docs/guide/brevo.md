@@ -20,7 +20,7 @@ Brevo holds the list and sends every mail. This page records how the account loo
 2. **Transactional emails › Tracking › Anonymous email tracking:** set to **Yes**.
 3. **Transactional emails › Retention rules:** choose the shortest duration and **Never store previews**.
 4. **Contacts › Lists:** create the list "Velve waitlist" and note its ID for `BREVO_LIST_ID`.
-5. **Contacts › Settings › Contact attributes:** create `GREETING` (text), `SIGNUP_AT` (date), `CONFIRMED_AT` (date), `CONSENT_VERSION` (text), `FIRST_DEPLOY` (text), `RUNS_ON` (text) and `ANSWERED_AT` (date). Until the last three exist, votes on the two optional questions fail with `answers_attribute_missing`. `FIRSTNAME` already exists.
+5. **Settings › Contacts › Contact attributes:** create `GREETING` (text), `SIGNUP_AT` (date), `CONFIRMED_AT` (date), `CONSENT_VERSION` (text), `FIRST_DEPLOY` (text), `RUNS_ON` (text) and `ANSWERED_AT` (date). Until the last three exist, votes on the two optional questions fail with `answers_attribute_missing`. `FIRSTNAME` already exists.
 6. **Settings › SMTP & API › API Keys & MCP:** create a key with an expiry date and put it into `BREVO_API_KEY`. Brevo keys cannot be limited to single permissions, so the protection is the expiry date and the IP lock: add the outgoing addresses of the Levo servers under **Security › Authorized IPs** and turn on blocking for API keys.
 7. **Unsubscribe page:** create a custom unsubscribe page and set its confirmation to redirect to `https://velve.dev/unsubscribed`. Use it in every campaign.
 8. **Webhooks:** create two webhooks to `https://velve.dev/api/webhooks/brevo`, both with bearer authentication (`"auth": {"type": "bearer", "token": "<BREVO_WEBHOOK_SECRET>"}`):
@@ -80,7 +80,7 @@ People who confirmed can answer two questions on "You're in", on "You're already
 | `RUNS_ON`      | Text | `vercel_netlify`, `hyperscaler`, `own_server`, `paas`, `nowhere`, `other` |
 | `ANSWERED_AT`  | Date | The day of the last answer                                                |
 
-Create the three attributes under **Settings › Contacts › Contact attributes › Normal attributes › Add a new attribute**, with exactly these uppercase names and types. Brevo cannot rename an attribute or change its type later. Until they exist, a vote shows the normal error message and the server logs `answers_failed` with `answers_attribute_missing`, because Brevo drops unknown attributes without an error and the server reads the contact back to check. The API key needs no extra permission: Brevo keys have full access.
+Create the three attributes under **Settings › Contacts › Contact attributes › Normal Attributes › + Add a new attribute**, with exactly these uppercase names and types. Brevo cannot rename an attribute or change its type later. Until they exist, a vote shows the normal error message and the server logs `answers_failed` with `answers_attribute_missing`, because Brevo drops unknown attributes and ignores values of the wrong type without an error and the server reads the contact back to check. The API key needs no extra permission: Brevo keys have full access.
 
 To see the answers, open **CRM › Contacts**, choose **Add filter** and filter on `FIRST_DEPLOY` or `RUNS_ON`, for example `FIRST_DEPLOY` is `database`. Save a filter as a segment under **CRM › Contacts › Segments** to count it over time. `hyperscaler` stands for AWS, Google Cloud or Azure, and `paas` for Render, Railway or Fly.
 
