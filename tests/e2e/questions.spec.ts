@@ -75,6 +75,25 @@ for (const viewport of viewports) {
       });
     });
 
+    test("the hairline keeps 40px and both answer groups share one width", async ({ page }) => {
+      await confirmedPage(page, `layout${viewport.width}`);
+      const box = async (selector: string) => {
+        const found = await page.locator(selector).first().boundingBox();
+        if (found === null) throw new Error(`${selector} is not rendered`);
+        return found;
+      };
+      const sentence = await box("main section > p");
+      const hairline = await box("main hr");
+      const block = await box('section[aria-labelledby="questions-title"]');
+      expect(Math.round(hairline.y - (sentence.y + sentence.height))).toBe(40);
+      expect(Math.round(block.y - (hairline.y + hairline.height))).toBe(40);
+      const groups = page.locator("fieldset");
+      const widths = await groups.evaluateAll((elements) =>
+        elements.map((element) => Math.round(element.getBoundingClientRect().width)),
+      );
+      expect(widths).toEqual([Math.round(block.width), Math.round(block.width)]);
+    });
+
     test("already listed shows the questions too", async ({ page }) => {
       const { link } = await confirmedPage(page, `again${viewport.width}`);
       await page.goto(link);

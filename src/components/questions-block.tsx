@@ -58,7 +58,7 @@ function ChoiceGroup<T extends string>({
   onSelect: (choice: T) => void;
 }) {
   return (
-    <fieldset className="m-0 flex flex-col gap-3 border-0 p-0">
+    <fieldset className="m-0 flex w-full min-w-0 flex-col gap-3 border-0 p-0">
       <legend className="mb-3 p-0 text-16 font-medium text-primary">{legend}</legend>
       <div className="grid grid-cols-2 gap-2 desk:flex desk:flex-wrap desk:justify-center">
         {choices.map((choice) => {

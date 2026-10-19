@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 const threadsShareUrl = `https://www.threads.com/intent/post?text=${encodeURIComponent(share.text)}`;
 
 function QuestionsDivider() {
-  return <hr aria-hidden="true" className="my-10 h-px w-full border-0 bg-line" />;
+  return <hr aria-hidden="true" className="my-8 h-px w-full border-0 bg-line" />;
 }
 
 export default async function ConfirmPage({ params }: { params: Promise<{ token: string }> }) {

@@ -69,9 +69,14 @@ test("pages make no foreign requests, set no cookies and store nothing", async (
   }
   const email = uniqueEmail("privacy");
   await signUp(page, email);
-  await page.goto(
-    linkFrom(await waitForMail(email, "Confirm your spot on the Velve waitlist"), "/confirm"),
+  const confirmLink = linkFrom(
+    await waitForMail(email, "Confirm your spot on the Velve waitlist"),
+    "/confirm",
   );
+  await page.goto(confirmLink);
+  await page.waitForLoadState("networkidle");
+  await page.goto(confirmLink);
+  await expect(page.getByRole("heading", { name: "You're already in" })).toBeVisible();
   await page.waitForLoadState("networkidle");
   await page.goto(linkFrom(await waitForMail(email, "You're on the Velve waitlist"), "/questions"));
   await page.waitForLoadState("networkidle");

@@ -5,6 +5,7 @@ describe("publicPath", () => {
   it("drops link tokens before anything reaches analytics", () => {
     expect(publicPath("/confirm/abcDEF123_-")).toBe("/confirm");
     expect(publicPath("/unsubscribe/abcDEF123_-")).toBe("/unsubscribe");
+    expect(publicPath("/questions/abcDEF123_-")).toBe("/questions");
   });
 
   it("keeps ordinary paths", () => {
