@@ -88,11 +88,9 @@
   "Copyright",
   "Content on this site is subject to German copyright law. Velve's source code is published under the licence stated in each repository.",
   "Short version: we store your email and, if you give it, your first name. We use them to send you updates. That's it.",
-  "last updated 18 oct 2026",
   "Who is responsible",
   "Velve is a product of Levo Studio, Julius Grimm, Europaplatz 2/1, 72072 Tübingen, Germany. For anything about your data, write to hello@velve.dev.",
   "What we store and why",
-  "Your email address, and your first name if you enter it, so we can confirm your sign-up, greet you properly and send you updates. Legal basis is your consent, Art. 6(1)(a) GDPR. We also keep when you signed up and confirmed, together with the consent text you agreed to, so we can prove you asked for the emails. Legal basis is our legitimate interest, Art. 6(1)(f) GDPR.",
   "Where it lives and who helps",
   "How long we keep it",
   "Your rights",
@@ -124,5 +122,7 @@
   "Share on Threads ↗",
   "just joined the velve waitlist. git push deploys, built so nobody gets to your data unnoticed. velve.dev",
   "one more thing: we're deciding what Velve supports first, and you get a vote. Two taps, no essay, no personality test.",
-  "Cast my vote"
+  "Cast my vote",
+  "last updated 19 oct 2026",
+  "Your email address, and your first name if you enter it, so we can confirm your sign-up, greet you properly and send you updates. Legal basis is your consent, Art. 6(1)(a) GDPR. We also keep when you signed up and confirmed, together with the consent text you agreed to, so we can prove you asked for the emails. Legal basis is our legitimate interest, Art. 6(1)(f) GDPR. If you answer the two optional questions, we store your answers with your contact to decide what to support first. Legal basis is your consent, Art. 6(1)(a) GDPR. They are deleted when you unsubscribe."
 ]

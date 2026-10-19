@@ -27,6 +27,7 @@ This is the waitlist for Velve, a platform for apps, databases and file storage 
 
 - The sign-up page with every state from the design, from 375 px up.
 - Double opt-in with our own encrypted links, a welcome mail, and an update template for Brevo campaigns.
+- Two optional questions after confirming, stored as Brevo contact attributes, and a share link to Threads.
 - Unsubscribing through our link, RFC 8058 one-click requests and Brevo's webhook, each of which deletes the contact.
 - Rate limits per network, per mailbox and per day, a honeypot and a minimum fill time, all tunable through the environment.
 - A strict content security policy, cookieless self-hosted analytics through our own origin, and a noindex guard until the legal review is done.
