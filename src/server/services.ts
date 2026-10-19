@@ -7,9 +7,19 @@ import { DailyCounter, WindowLimiter } from "./rate-limit";
 
 export type Services = {
   config: Config;
-  brevo: Pick<BrevoClient, "sendMail" | "isOnList" | "addToList" | "deleteContact" | "checkList">;
+  brevo: Pick<
+    BrevoClient,
+    | "sendMail"
+    | "isOnList"
+    | "addToList"
+    | "updateContact"
+    | "contactAttributes"
+    | "deleteContact"
+    | "checkList"
+  >;
   signupsPerIp: WindowLimiter;
   confirmMailsPerAddress: WindowLimiter;
+  answersPerIp: WindowLimiter;
   sendCap: DailyCounter;
   now: () => number;
   defer: (task: () => Promise<void>) => void;
@@ -33,6 +43,10 @@ export function getServices(): Services {
       config.limits.signupWindowSeconds * 1000,
     ),
     confirmMailsPerAddress: new WindowLimiter(1, config.limits.confirmMailIntervalSeconds * 1000),
+    answersPerIp: new WindowLimiter(
+      config.limits.answersPerIp,
+      config.limits.answersWindowSeconds * 1000,
+    ),
     sendCap: new DailyCounter(config.limits.dailySendCap),
     now: Date.now,
     defer: (task) => after(task),

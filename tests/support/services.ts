@@ -22,16 +22,26 @@ export type FakeBrevo = Services["brevo"] & {
   sent: Parameters<Services["brevo"]["sendMail"]>[0][];
   listed: Map<string, Record<string, unknown>>;
   deleted: string[];
+  updated: Map<string, Record<string, string>>;
 };
 
 export function fakeBrevo(): FakeBrevo {
   const sent: FakeBrevo["sent"] = [];
   const listed = new Map<string, Record<string, unknown>>();
   const deleted: string[] = [];
+  const updated = new Map<string, Record<string, string>>();
   return {
     sent,
     listed,
     deleted,
+    updated,
+    contactAttributes: (email) =>
+      Promise.resolve(listed.has(email) ? { ...listed.get(email), ...updated.get(email) } : null),
+    updateContact: (email, attributes) => {
+      if (!listed.has(email)) return Promise.resolve("missing" as const);
+      updated.set(email, attributes);
+      return Promise.resolve("updated" as const);
+    },
     sendMail: (mail) => {
       sent.push(mail);
       return Promise.resolve();
@@ -63,6 +73,10 @@ export function testServices(
       config.limits.signupWindowSeconds * 1000,
     ),
     confirmMailsPerAddress: new WindowLimiter(1, config.limits.confirmMailIntervalSeconds * 1000),
+    answersPerIp: new WindowLimiter(
+      config.limits.answersPerIp,
+      config.limits.answersWindowSeconds * 1000,
+    ),
     sendCap: new DailyCounter(config.limits.dailySendCap),
     now: overrides.now ?? Date.now,
     defer: (task) => {

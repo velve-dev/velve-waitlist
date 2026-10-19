@@ -15,6 +15,7 @@ export type MockState = {
   contacts: Map<string, { listIds: number[]; attributes: Record<string, unknown> }>;
   umamiEvents: unknown[];
   failures: { matching: string | null; remaining: number }[];
+  missingAttributes: { matching: string; names: string[] }[];
   requests: { method: string; path: string }[];
 };
 
@@ -72,6 +73,14 @@ async function route(state: MockState, request: IncomingMessage, response: Serve
   }
   if (url.pathname === "/umami/api/send") {
     state.umamiEvents.push(JSON.parse(raw) as unknown);
+    send(response, 200, { ok: true });
+    return;
+  }
+  if (url.pathname === "/__mock/attributes") {
+    state.missingAttributes.push({
+      matching: url.searchParams.get("matching") ?? "",
+      names: (url.searchParams.get("missing") ?? "").split(",").filter((name) => name !== ""),
+    });
     send(response, 200, { ok: true });
     return;
   }
@@ -149,6 +158,17 @@ async function route(state: MockState, request: IncomingMessage, response: Serve
         ? send(response, 404, { code: "document_not_found" })
         : send(response, 200, { email, listIds: contact.listIds, attributes: contact.attributes });
     }
+    if (method === "PUT") {
+      if (contact === undefined) return send(response, 404, { code: "document_not_found" });
+      const attributes = (body.attributes as Record<string, unknown> | undefined) ?? {};
+      const missing = state.missingAttributes
+        .filter((rule) => email.includes(rule.matching))
+        .flatMap((rule) => rule.names);
+      for (const [name, value] of Object.entries(attributes)) {
+        if (!missing.includes(name)) contact.attributes[name] = value;
+      }
+      return send(response, 204);
+    }
     if (method === "DELETE") {
       if (contact === undefined) return send(response, 404, { code: "document_not_found" });
       state.contacts.delete(email);
@@ -164,6 +184,7 @@ export function startBrevoMock(port: number): Promise<{ server: Server; state: M
     contacts: new Map(),
     umamiEvents: [],
     failures: [],
+    missingAttributes: [],
     requests: [],
   };
   const server = createServer((request, response) => {
