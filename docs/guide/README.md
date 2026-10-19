@@ -8,17 +8,17 @@ A visitor leaves an email address and, if they like, a first name. Nothing is st
 
 ## Where things are
 
-| Path              | What it holds                                                                 |
-| ----------------- | ----------------------------------------------------------------------------- |
-| `src/app/`        | Pages and API routes. The App Router maps folders to URLs.                    |
-| `src/components/` | The page shell, form, notices and message pages.                              |
-| `src/content/`    | Every user-facing string (`copy.ts`) and the legal texts (`legal.ts`).        |
-| `src/lib/`        | Code shared by browser and server: email checks, name cleaning, analytics.    |
-| `src/server/`     | Server-only code: configuration, tokens, limits, the Brevo client, the flows. |
-| `src/proxy.ts`    | Runs before every request: security headers, nonce, link rate limits.         |
-| `emails/`         | Mail copy, the table layout, and the generated Brevo update template.         |
-| `scripts/`        | The custom gates and asset rendering.                                         |
-| `tests/`          | Vitest unit tests, Playwright end-to-end tests and the Brevo mock.            |
+| Path              | What it holds                                                                               |
+| ----------------- | ------------------------------------------------------------------------------------------- |
+| `src/app/`        | Pages and API routes. The App Router maps folders to URLs.                                  |
+| `src/components/` | The page shell, form, notices and message pages.                                            |
+| `src/content/`    | Every user-facing string (`copy.ts`) and the legal texts (`legal.ts`).                      |
+| `src/lib/`        | Code shared by browser and server: email checks, name cleaning, analytics.                  |
+| `src/server/`     | Server-only code: configuration, tokens, limits, the Brevo client, the flows.               |
+| `src/proxy.ts`    | Runs before every request: security headers, nonce, link rate limits, server action probes. |
+| `emails/`         | Mail copy, the table layout, and the generated Brevo update template.                       |
+| `scripts/`        | The custom gates and asset rendering.                                                       |
+| `tests/`          | Vitest unit tests, Playwright end-to-end tests and the Brevo mock.                          |
 
 ## Signing up
 
