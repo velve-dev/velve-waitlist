@@ -287,7 +287,14 @@ for (const viewport of viewports) {
 }
 
 test("server action probes are turned away before they reach Next", async ({ request }) => {
-  for (const path of ["/", "/privacy", "/api/health", "/missing"]) {
+  for (const path of [
+    "/",
+    "/privacy",
+    "/api/health",
+    "/missing",
+    "/email/missing",
+    "/icon.svg-missing",
+  ]) {
     const response = await request.post(path, {
       headers: { "next-action": "y", "content-type": "text/plain;charset=UTF-8" },
       data: "[]",

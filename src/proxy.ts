@@ -78,5 +78,6 @@ export const config = {
       source:
         "/((?!_next/static|_next/image|email/|icon.svg|apple-icon.png|opengraph-image.png).*)",
     },
+    { source: "/:path*", has: [{ type: "header", key: "next-action" }] },
   ],
 };
