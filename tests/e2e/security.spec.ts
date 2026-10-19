@@ -22,6 +22,7 @@ const pages = [
   "/unsubscribed",
   "/unsubscribe/broken",
   "/confirm/broken",
+  "/questions/broken",
   "/missing",
 ];
 
@@ -66,7 +67,14 @@ test("pages make no foreign requests, set no cookies and store nothing", async (
     await page.goto(path);
     await page.waitForLoadState("networkidle");
   }
-  await signUp(page, uniqueEmail("privacy"));
+  const email = uniqueEmail("privacy");
+  await signUp(page, email);
+  await page.goto(
+    linkFrom(await waitForMail(email, "Confirm your spot on the Velve waitlist"), "/confirm"),
+  );
+  await page.waitForLoadState("networkidle");
+  await page.goto(linkFrom(await waitForMail(email, "You're on the Velve waitlist"), "/questions"));
+  await page.waitForLoadState("networkidle");
   expect(watched.foreignRequests).toEqual([]);
   expect(watched.cookieHeaders).toEqual([]);
   expect(watched.policyViolations).toEqual([]);

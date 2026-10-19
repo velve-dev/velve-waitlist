@@ -3,12 +3,19 @@ import "server-only";
 import { buildWelcomeMail, siteLinks } from "../../emails/mails.ts";
 import { greetingFor } from "@/lib/name";
 import { BrevoError } from "./brevo";
-import { createUnsubscribeToken, readConfirmToken, type SignupClaim } from "./link-tokens";
+import {
+  createQuestionsToken,
+  createUnsubscribeToken,
+  readConfirmToken,
+  type SignupClaim,
+} from "./link-tokens";
 import { logEvent } from "./log";
 import type { Services } from "./services";
 
 export type ConfirmOutcome =
-  { kind: "confirmed"; firstName: string } | { kind: "alreadyListed" } | { kind: "invalidLink" };
+  | { kind: "confirmed"; firstName: string; questionsToken: string }
+  | { kind: "alreadyListed"; questionsToken: string }
+  | { kind: "invalidLink" };
 
 function brevoDate(time: number): string {
   return new Date(time).toISOString().slice(0, 10);
@@ -29,7 +36,10 @@ export async function confirmSignup(token: string, services: Services): Promise<
   if (running !== undefined) {
     await running;
     logEvent("contact_already_listed");
-    return { kind: "alreadyListed" };
+    return {
+      kind: "alreadyListed",
+      questionsToken: createQuestionsToken(claim.email, config.tokenKey),
+    };
   }
   const confirmation = listContact(claim, now, services);
   confirmationsInFlight.set(claim.email, confirmation);
@@ -46,9 +56,10 @@ async function listContact(
   services: Services,
 ): Promise<ConfirmOutcome> {
   const { config } = services;
+  const questionsToken = createQuestionsToken(claim.email, config.tokenKey);
   if (await services.brevo.isOnList(claim.email, config.brevo.listId)) {
     logEvent("contact_already_listed");
-    return { kind: "alreadyListed" };
+    return { kind: "alreadyListed", questionsToken };
   }
 
   const greeting = greetingFor(claim.firstName, claim.email);
@@ -61,7 +72,7 @@ async function listContact(
   });
   logEvent("contact_confirmed");
   services.defer(() => sendWelcome(claim.email, greeting, services));
-  return { kind: "confirmed", firstName: claim.firstName };
+  return { kind: "confirmed", firstName: claim.firstName, questionsToken };
 }
 
 async function sendWelcome(email: string, greeting: string, services: Services) {
@@ -71,7 +82,8 @@ async function sendWelcome(email: string, greeting: string, services: Services) 
     return;
   }
   const unsubscribeUrl = `${config.siteUrl}/unsubscribe/${createUnsubscribeToken(email, config.tokenKey)}`;
-  const mail = buildWelcomeMail(greeting, unsubscribeUrl, siteLinks(config.siteUrl));
+  const questionsUrl = `${config.siteUrl}/questions/${createQuestionsToken(email, config.tokenKey)}`;
+  const mail = buildWelcomeMail(greeting, unsubscribeUrl, questionsUrl, siteLinks(config.siteUrl));
   try {
     await services.brevo.sendMail({
       to: { email },

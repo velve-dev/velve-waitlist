@@ -14,6 +14,7 @@ export function limitedGroupFor(pathname: string): LimitedGroup | null {
   if (
     pathname.startsWith("/confirm/") ||
     pathname.startsWith("/unsubscribe/") ||
+    pathname.startsWith("/questions/") ||
     pathname.startsWith("/api/unsubscribe/")
   ) {
     return "links";

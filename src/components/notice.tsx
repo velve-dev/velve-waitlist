@@ -13,7 +13,7 @@ export function Notice({
   children: ReactNode;
 }) {
   return (
-    <section className="flex flex-col items-center gap-2">
+    <section className="flex w-full flex-col items-center gap-2">
       <IconTile tone={tone} spacing="compact">
         {icon}
       </IconTile>

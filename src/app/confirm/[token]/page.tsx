@@ -5,9 +5,10 @@ import { Hero } from "@/components/hero";
 import { MessagePage } from "@/components/message-page";
 import { Notice, NoticeText } from "@/components/notice";
 import { PageShell } from "@/components/page-shell";
+import { QuestionsBlock } from "@/components/questions-block";
 import { SecondaryLink } from "@/components/secondary-link";
 import { TrackSignupConfirmed } from "@/components/track-event";
-import { alreadyIn, brokenConfirmLink, confirmed, links } from "@/content/copy";
+import { alreadyIn, brokenConfirmLink, confirmed, links, share } from "@/content/copy";
 import { confirmSignup } from "@/server/confirm";
 import { getServices } from "@/server/services";
 
@@ -15,6 +16,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
   referrer: "no-referrer",
 };
+
+const threadsShareUrl = `https://www.threads.com/intent/post?text=${encodeURIComponent(share.text)}`;
+
+function QuestionsDivider() {
+  return <hr aria-hidden="true" className="my-10 h-px w-full border-0 bg-line" />;
+}
 
 export default async function ConfirmPage({ params }: { params: Promise<{ token: string }> }) {
   await connection();
@@ -46,12 +53,17 @@ export default async function ConfirmPage({ params }: { params: Promise<{ token:
             }
           >
             <NoticeText>{confirmed.body}</NoticeText>
-            <div className="flex flex-wrap justify-center gap-2 pt-4">
+            <QuestionsDivider />
+            <QuestionsBlock token={outcome.questionsToken} layout="inline" />
+            <div className="flex w-full flex-col items-stretch justify-center gap-2 pt-10 desk:w-auto desk:flex-row desk:flex-wrap">
               <SecondaryLink href={links.threads}>
                 {confirmed.threads.replace(" ↗", "")}
               </SecondaryLink>
               <SecondaryLink href={links.github}>
                 {confirmed.github.replace(" ↗", "")}
+              </SecondaryLink>
+              <SecondaryLink href={threadsShareUrl} newTab>
+                {share.label.replace(" ↗", "")}
               </SecondaryLink>
             </div>
             <TrackSignupConfirmed />
@@ -63,6 +75,8 @@ export default async function ConfirmPage({ params }: { params: Promise<{ token:
             title={alreadyIn.title}
           >
             <NoticeText>{alreadyIn.body}</NoticeText>
+            <QuestionsDivider />
+            <QuestionsBlock token={outcome.questionsToken} layout="inline" />
           </Notice>
         )}
       </Hero>

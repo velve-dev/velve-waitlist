@@ -147,3 +147,12 @@ export const questions = {
   doneBody: "Thanks. Your answers help decide what Velve supports first.",
   back: "Back to velve.dev",
 } as const;
+export const brokenQuestionsLink = {
+  title: "This link doesn't work",
+  body: "It may be old or cut off by your email app. The questions are optional anyway.",
+} as const;
+
+export const share = {
+  label: "Share on Threads ↗",
+  text: "just joined the velve waitlist. git push deploys, built so nobody gets to your data unnoticed. velve.dev",
+} as const;
