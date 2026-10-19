@@ -131,7 +131,9 @@ for (const viewport of viewports) {
       );
       await page.goto(link);
       await expect(page.getByRole("heading", { name: confirmed.title, exact: true })).toBeVisible();
-      await expect(page.getByRole("main").getByRole("link", { name: "Threads" })).toBeVisible();
+      await expect(
+        page.getByRole("main").getByRole("link", { name: "Threads", exact: true }),
+      ).toBeVisible();
       await expectNoSeriousA11yViolations(page);
       await saveScreen(page, `confirmed-${viewport.width}`);
       await page.goto(link);

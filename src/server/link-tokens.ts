@@ -13,10 +13,20 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
+function servesPurpose(payload: Record<string, unknown>, purpose: string): boolean {
+  return payload.p === undefined || payload.p === purpose;
+}
+
 export function createConfirmToken(claim: SignupClaim, key: Buffer): string {
   return sealToken(
     "confirm",
-    { e: claim.email, n: claim.firstName, t: claim.signedUpAt, c: claim.consentVersion },
+    {
+      p: "confirm",
+      e: claim.email,
+      n: claim.firstName,
+      t: claim.signedUpAt,
+      c: claim.consentVersion,
+    },
     key,
   );
 }
@@ -28,7 +38,7 @@ export function readConfirmToken(
   ttlSeconds: number,
 ): SignupClaim | null {
   const payload = openToken("confirm", token, key);
-  if (!isRecord(payload)) return null;
+  if (!isRecord(payload) || !servesPurpose(payload, "confirm")) return null;
   const { e, n, t, c } = payload;
   if (
     typeof e !== "string" ||
@@ -42,20 +52,38 @@ export function readConfirmToken(
   return { email: e, firstName: n, signedUpAt: t, consentVersion: c };
 }
 
+function readAddressToken(
+  purpose: "unsubscribe" | "questions",
+  token: string,
+  key: Buffer,
+): string | null {
+  const payload = openToken(purpose, token, key);
+  if (!isRecord(payload) || !servesPurpose(payload, purpose)) return null;
+  return typeof payload.e === "string" ? payload.e : null;
+}
+
 export function createUnsubscribeToken(email: string, key: Buffer): string {
-  return sealToken("unsubscribe", { e: email }, key);
+  return sealToken("unsubscribe", { p: "unsubscribe", e: email }, key);
 }
 
 export function readUnsubscribeToken(token: string, key: Buffer): string | null {
-  const payload = openToken("unsubscribe", token, key);
-  return isRecord(payload) && typeof payload.e === "string" ? payload.e : null;
+  return readAddressToken("unsubscribe", token, key);
+}
+
+export function createQuestionsToken(email: string, key: Buffer): string {
+  return sealToken("questions", { p: "questions", e: email }, key);
+}
+
+export function readQuestionsToken(token: string, key: Buffer): string | null {
+  return readAddressToken("questions", token, key);
 }
 
 export function createFormToken(issuedAt: number, key: Buffer): string {
-  return sealToken("form", { t: issuedAt }, key);
+  return sealToken("form", { p: "form", t: issuedAt }, key);
 }
 
 export function readFormTokenIssuedAt(token: string, key: Buffer): number | null {
   const payload = openToken("form", token, key);
-  return isRecord(payload) && typeof payload.t === "number" ? payload.t : null;
+  if (!isRecord(payload) || !servesPurpose(payload, "form")) return null;
+  return typeof payload.t === "number" ? payload.t : null;
 }

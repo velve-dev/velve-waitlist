@@ -22,6 +22,7 @@ const pages = [
   "/unsubscribed",
   "/unsubscribe/broken",
   "/confirm/broken",
+  "/questions/broken",
   "/missing",
 ];
 
@@ -66,7 +67,19 @@ test("pages make no foreign requests, set no cookies and store nothing", async (
     await page.goto(path);
     await page.waitForLoadState("networkidle");
   }
-  await signUp(page, uniqueEmail("privacy"));
+  const email = uniqueEmail("privacy");
+  await signUp(page, email);
+  const confirmLink = linkFrom(
+    await waitForMail(email, "Confirm your spot on the Velve waitlist"),
+    "/confirm",
+  );
+  await page.goto(confirmLink);
+  await page.waitForLoadState("networkidle");
+  await page.goto(confirmLink);
+  await expect(page.getByRole("heading", { name: "You're already in" })).toBeVisible();
+  await page.waitForLoadState("networkidle");
+  await page.goto(linkFrom(await waitForMail(email, "You're on the Velve waitlist"), "/questions"));
+  await page.waitForLoadState("networkidle");
   expect(watched.foreignRequests).toEqual([]);
   expect(watched.cookieHeaders).toEqual([]);
   expect(watched.policyViolations).toEqual([]);
@@ -272,3 +285,25 @@ for (const viewport of viewports) {
     await saveScreen(page, `privacy-${viewport.width}`);
   });
 }
+
+test("server action probes are turned away before they reach Next", async ({ request }) => {
+  for (const path of [
+    "/",
+    "/privacy",
+    "/api/health",
+    "/missing",
+    "/email/missing",
+    "/icon.svg-missing",
+  ]) {
+    const response = await request.post(path, {
+      headers: { "next-action": "y", "content-type": "text/plain;charset=UTF-8" },
+      data: "[]",
+    });
+    expect(response.status()).toBe(404);
+    expect(await response.text()).toBe("");
+    const headers = response.headers();
+    expect(headers["content-security-policy"]).toContain("default-src 'none'");
+    expect(headers["x-content-type-options"]).toBe("nosniff");
+    expect(headers["cache-control"]).toBe("no-store");
+  }
+});

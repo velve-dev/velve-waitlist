@@ -138,6 +138,10 @@ input:focus-visible {
   animation: velve-appear var(--duration-fade) var(--ease) 1600ms both;
 }
 
+.velve-fade-in {
+  animation: velve-appear var(--duration-fade) var(--ease) both;
+}
+
 .velve-pulse-live {
   --pulse-scale: 2.6667;
 }
@@ -155,6 +159,7 @@ input:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .velve-typed,
   .velve-live,
+  .velve-fade-in,
   .velve-pulse {
     animation: none;
   }

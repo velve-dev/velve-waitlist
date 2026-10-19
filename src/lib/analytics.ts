@@ -1,10 +1,14 @@
 // Sends cookieless Umami events with token paths stripped.
-export const analyticsEvents = ["signup_submitted", "signup_confirmed"] as const;
+export const analyticsEvents = [
+  "signup_submitted",
+  "signup_confirmed",
+  "questions_answered",
+] as const;
 type AnalyticsEvent = (typeof analyticsEvents)[number];
 type UmamiPayload = Record<string, unknown>;
 type Umami = { track: (build: (payload: UmamiPayload) => UmamiPayload) => unknown };
 
-const tokenRoutes = ["/confirm/", "/unsubscribe/"];
+const tokenRoutes = ["/confirm/", "/unsubscribe/", "/questions/"];
 
 const tokenLikeSegment = /^[A-Za-z0-9_-]{24,}$/;
 const addressLikeSegment = /@|%40/i;

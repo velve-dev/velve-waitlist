@@ -25,6 +25,8 @@ export type ContactAttributes = {
   CONSENT_VERSION: string;
 };
 
+const absent = Symbol("absent");
+
 export class BrevoError extends Error {
   constructor(readonly code: string) {
     super(code);
@@ -48,7 +50,7 @@ export class BrevoClient {
 
   async isOnList(email: string, listId: number): Promise<boolean> {
     const response = await this.call("GET", contactPath(email), undefined, [400, 404]);
-    if (response === null) return false;
+    if (response === absent || response === null) return false;
     const listIds = (response as { listIds?: unknown }).listIds;
     return Array.isArray(listIds) && listIds.includes(listId);
   }
@@ -62,6 +64,23 @@ export class BrevoClient {
     });
   }
 
+  async updateContact(
+    email: string,
+    attributes: Record<string, string>,
+  ): Promise<"updated" | "missing"> {
+    const response = await this.call("PUT", contactPath(email), { attributes }, [404]);
+    return response === absent ? "missing" : "updated";
+  }
+
+  async contactAttributes(email: string): Promise<Record<string, unknown> | null> {
+    const response = await this.call("GET", contactPath(email), undefined, [404]);
+    if (response === absent || response === null) return null;
+    const attributes = (response as { attributes?: unknown }).attributes;
+    return typeof attributes === "object" && attributes !== null
+      ? (attributes as Record<string, unknown>)
+      : {};
+  }
+
   async deleteContact(email: string): Promise<void> {
     await this.call("DELETE", contactPath(email), undefined, [404]);
   }
@@ -71,7 +90,7 @@ export class BrevoClient {
   }
 
   private async call(
-    method: "GET" | "POST" | "DELETE",
+    method: "GET" | "POST" | "PUT" | "DELETE",
     path: string,
     body?: object,
     absentStatuses: number[] = [],
@@ -96,7 +115,7 @@ export class BrevoClient {
           : "upstream_unreachable",
       );
     }
-    if (absentStatuses.includes(response.status)) return null;
+    if (absentStatuses.includes(response.status)) return absent;
     if (!response.ok) throw new BrevoError(`upstream_status_${response.status}`);
     if (response.status === 204) return null;
     const contentType = response.headers.get("content-type") ?? "";

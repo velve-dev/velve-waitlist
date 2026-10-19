@@ -23,7 +23,12 @@ const mails = [
   {
     name: "welcome",
     needsUnsubscribe: true,
-    mail: buildWelcomeMail("Alex", `${siteUrl}/unsubscribe/sample`, links),
+    mail: buildWelcomeMail(
+      "Alex",
+      `${siteUrl}/unsubscribe/sample`,
+      `${siteUrl}/questions/sample`,
+      links,
+    ),
   },
   { name: "update", needsUnsubscribe: true, mail: buildUpdateTemplate(links) },
 ];

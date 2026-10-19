@@ -2,7 +2,7 @@
 import "server-only";
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 
-type Purpose = "confirm" | "unsubscribe" | "form";
+type Purpose = "confirm" | "unsubscribe" | "form" | "questions";
 
 const ivLength = 12;
 const tagLength = 16;

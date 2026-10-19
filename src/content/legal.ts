@@ -45,7 +45,7 @@ export const privacy = {
   title: "Privacy",
   subline:
     "Short version: we store your email and, if you give it, your first name. We use them to send you updates. That's it.",
-  updated: "last updated 18 oct 2026",
+  updated: "last updated 19 oct 2026",
   sections: [
     {
       heading: "Who is responsible",
@@ -53,7 +53,7 @@ export const privacy = {
     },
     {
       heading: "What we store and why",
-      text: "Your email address, and your first name if you enter it, so we can confirm your sign-up, greet you properly and send you updates. Legal basis is your consent, Art. 6(1)(a) GDPR. We also keep when you signed up and confirmed, together with the consent text you agreed to, so we can prove you asked for the emails. Legal basis is our legitimate interest, Art. 6(1)(f) GDPR.",
+      text: "Your email address, and your first name if you enter it, so we can confirm your sign-up, greet you properly and send you updates. Legal basis is your consent, Art. 6(1)(a) GDPR. We also keep when you signed up and confirmed, together with the consent text you agreed to, so we can prove you asked for the emails. Legal basis is our legitimate interest, Art. 6(1)(f) GDPR. If you answer the two optional questions, we store your answers with your contact to decide what to support first. Legal basis is your consent, Art. 6(1)(a) GDPR. They are deleted when you unsubscribe.",
     },
     {
       heading: "Where it lives and who helps",

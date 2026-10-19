@@ -3,6 +3,7 @@ import { confirmSignup } from "@/server/confirm";
 import {
   createConfirmToken,
   createUnsubscribeToken,
+  readQuestionsToken,
   readUnsubscribeToken,
 } from "@/server/link-tokens";
 import { handleBrevoWebhook, handleUnsubscribe } from "@/server/unsubscribe";
@@ -24,10 +25,13 @@ function setup(env: Record<string, string> = {}) {
 describe("confirmSignup", () => {
   it("lists the contact with the agreed attributes and sends a welcome", async () => {
     const { services, token } = setup();
-    expect(await confirmSignup(token(), services)).toEqual({
-      kind: "confirmed",
-      firstName: "Alex",
-    });
+    const outcome = await confirmSignup(token(), services);
+    expect(outcome).toMatchObject({ kind: "confirmed", firstName: "Alex" });
+    expect(
+      outcome.kind === "confirmed"
+        ? readQuestionsToken(outcome.questionsToken, services.config.tokenKey)
+        : null,
+    ).toBe("alex@company.com");
     expect(services.brevo.listed.get("alex@company.com")).toEqual({
       FIRSTNAME: "Alex",
       GREETING: "Alex",
@@ -57,7 +61,7 @@ describe("confirmSignup", () => {
     const { services, token } = setup();
     await confirmSignup(token(), services);
     await Promise.all(services.deferred);
-    expect(await confirmSignup(token(), services)).toEqual({ kind: "alreadyListed" });
+    expect(await confirmSignup(token(), services)).toMatchObject({ kind: "alreadyListed" });
     await Promise.all(services.deferred);
     expect(services.brevo.sent).toHaveLength(1);
   });

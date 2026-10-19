@@ -23,6 +23,8 @@ export const welcomeMail = {
   subject: "You're on the Velve waitlist",
   title: "You're in",
   body: "thanks for confirming. Every few weeks you'll get what we shipped, what broke and what's next. Countdowns and last chances aren't our thing.",
+  vote: "one more thing: we're deciding what Velve supports first, and you get a vote. Two taps, no essay, no personality test.",
+  voteButton: "Cast my vote",
   signoff: "Stay tuned and see you soon,",
 } as const;
 

@@ -37,6 +37,7 @@ export function buildConfirmMail(
 export function buildWelcomeMail(
   greeting: string,
   unsubscribeUrl: string,
+  questionsUrl: string,
   links: SiteLinks,
 ): RenderedMail {
   return renderMail({
@@ -44,7 +45,11 @@ export function buildWelcomeMail(
     preview: welcomeMail.body,
     title: welcomeMail.title,
     greeting,
-    blocks: [{ kind: "paragraph", text: welcomeMail.body }],
+    blocks: [
+      { kind: "paragraph", text: welcomeMail.body },
+      { kind: "paragraph", text: welcomeMail.vote },
+      { kind: "button", label: welcomeMail.voteButton, href: questionsUrl },
+    ],
     signoff: welcomeMail.signoff,
     links: { ...links, unsubscribe: unsubscribeUrl },
   });

@@ -3,6 +3,7 @@ import { formErrors } from "@/content/copy";
 import { ConfigError, getConfig } from "@/server/config";
 import { siteIsIndexable } from "@/server/indexing";
 import { checkLinkLimit, limitedGroupFor } from "@/server/link-limits";
+import { logEvent } from "@/server/log";
 import { fixedSecurityHeaders, pagePolicy, resourcePolicy } from "@/server/security-headers";
 
 function isResourceRoute(pathname: string): boolean {
@@ -39,7 +40,20 @@ function rateLimited(request: NextRequest): NextResponse | null {
   });
 }
 
+function isServerActionProbe(request: NextRequest): boolean {
+  return request.headers.has("next-action");
+}
+
+function turnedAway(): NextResponse {
+  return new NextResponse(null, { status: 404, headers: { "cache-control": "no-store" } });
+}
+
 export function proxy(request: NextRequest) {
+  if (isServerActionProbe(request)) {
+    logEvent("server_action_probe");
+    return secure(turnedAway(), resourcePolicy);
+  }
+
   const limited = rateLimited(request);
   if (limited !== null) return secure(limited, resourcePolicy);
 
@@ -64,5 +78,6 @@ export const config = {
       source:
         "/((?!_next/static|_next/image|email/|icon.svg|apple-icon.png|opengraph-image.png).*)",
     },
+    { source: "/:path*", has: [{ type: "header", key: "next-action" }] },
   ],
 };

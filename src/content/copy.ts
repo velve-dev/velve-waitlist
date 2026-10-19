@@ -115,3 +115,44 @@ export const serverError = {
   body: "Not your fault. Try again in a minute.",
   back: "Back to velve.dev",
 } as const;
+
+export const questions = {
+  eyebrow: "2 questions · 20 seconds",
+  title: "Help us pick what comes first",
+  body: "Optional, two taps. Your answers help decide what Velve supports first.",
+  firstDeploy: {
+    legend: "What would you deploy on Velve first?",
+    options: {
+      web_app: "Web app",
+      api: "API or backend",
+      database: "Database",
+      static_site: "Static site",
+      side_project: "Side project",
+      other: "Something else",
+    },
+  },
+  runsOn: {
+    legend: "Where does it run today?",
+    options: {
+      vercel_netlify: "Vercel or Netlify",
+      hyperscaler: "AWS, Google Cloud or Azure",
+      own_server: "Own server or VPS",
+      paas: "Render, Railway or Fly",
+      nowhere: "Nowhere yet",
+      other: "Somewhere else",
+    },
+  },
+  submit: "Send my vote",
+  doneTitle: "Vote counted",
+  doneBody: "Thanks. Your answers help decide what Velve supports first.",
+  back: "Back to velve.dev",
+} as const;
+export const brokenQuestionsLink = {
+  title: "This link doesn't work",
+  body: "It may be old or cut off by your email app. The questions are optional anyway.",
+} as const;
+
+export const share = {
+  label: "Share on Threads ↗",
+  text: "just joined the velve waitlist. git push deploys, built so nobody gets to your data unnoticed. velve.dev",
+} as const;

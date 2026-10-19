@@ -101,6 +101,8 @@ describe("configuration", () => {
       confirmMailIntervalSeconds: 86_400,
       minFormSeconds: 1.5,
       linkRequestsPerIp: 30,
+      answersPerIp: 10,
+      answersWindowSeconds: 600,
       linkWindowSeconds: 600,
       webhookRequestsPerIp: 300,
       webhookWindowSeconds: 60,

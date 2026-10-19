@@ -24,6 +24,8 @@ export type Config = {
     confirmMailIntervalSeconds: number;
     minFormSeconds: number;
     linkRequestsPerIp: number;
+    answersPerIp: number;
+    answersWindowSeconds: number;
     linkWindowSeconds: number;
     webhookRequestsPerIp: number;
     webhookWindowSeconds: number;
@@ -108,6 +110,8 @@ export function readConfig(env: Env): Config {
       confirmMailIntervalSeconds: positiveNumber("CONFIRM_MAIL_INTERVAL_SECONDS", 86_400),
       minFormSeconds: positiveNumber("MIN_FORM_SECONDS", 1.5),
       linkRequestsPerIp: positiveNumber("LINK_LIMIT_PER_IP", 30),
+      answersPerIp: positiveNumber("QUESTIONS_LIMIT_PER_IP", 10),
+      answersWindowSeconds: positiveNumber("QUESTIONS_LIMIT_WINDOW_SECONDS", 600),
       linkWindowSeconds: positiveNumber("LINK_LIMIT_WINDOW_SECONDS", 600),
       webhookRequestsPerIp: positiveNumber("WEBHOOK_LIMIT_PER_IP", 300),
       webhookWindowSeconds: positiveNumber("WEBHOOK_LIMIT_WINDOW_SECONDS", 60),

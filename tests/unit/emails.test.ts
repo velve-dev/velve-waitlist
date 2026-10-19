@@ -30,11 +30,19 @@ describe("mails", () => {
   });
 
   it("renders the welcome with our own unsubscribe link", () => {
-    const mail = buildWelcomeMail("there", "https://velve.dev/unsubscribe/xyz", links);
+    const mail = buildWelcomeMail(
+      "there",
+      "https://velve.dev/unsubscribe/xyz",
+      "https://velve.dev/questions/abc",
+      links,
+    );
     expect(mail.subject).toBe("You're on the Velve waitlist");
     expect(mail.html).toContain('href="https://velve.dev/unsubscribe/xyz"');
     expect(mail.text).toContain("Hey there,");
     expect(mail.text).toContain("Stay tuned and see you soon,");
+    expect(mail.html).toContain('href="https://velve.dev/questions/abc"');
+    expect(mail.text).toContain("Cast my vote: https://velve.dev/questions/abc");
+    expect(mail.text.indexOf("you get a vote")).toBeLessThan(mail.text.indexOf("Stay tuned"));
   });
 
   it("keeps Brevo placeholders in the update template", () => {

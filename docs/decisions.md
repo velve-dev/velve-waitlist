@@ -136,3 +136,22 @@ The per-mailbox interval is spent before the mail goes out, because the mail is 
 **Status:** accepted, 2026-10-18
 
 Because suppressed sign-ups answer like new ones (ADR 4), someone who signs up twice sees "Check your inbox" without a second mail. Under "Check your inbox" every visitor now reads "Nothing there? Check your spam folder. Each address gets one link a day." It is shown to everyone, so it reveals nothing about any address. The owner approved the wording as a deliberate exception to the rule against naming time limits in copy. The sentence is only true while `CONFIRM_MAIL_INTERVAL_SECONDS` stays at 86400.
+
+## ADR 20: Optional questions stored as Brevo attributes
+
+**Status:** accepted, 2026-10-19
+
+Velve wants to know what people would deploy first and where it runs today. The answers are stored as three attributes on the existing Brevo contact (`FIRST_DEPLOY`, `RUNS_ON`, `ANSWERED_AT`), not in a database of our own, for the same reason as ADR 4: there is no second copy to protect, back up or delete, and unsubscribing deletes the answers along with the contact.
+
+- **Where the questions appear:** directly on "You're in" and "You're already in", under a hairline, because right after confirming is when people are most willing to answer. The welcome mail links to `/questions/<token>` for everyone who skipped them. The last answer wins.
+- **Allowlist, no free text:** each answer is one slug from a fixed list. Nothing typed by a visitor reaches Brevo, so the questions cannot carry personal data or abuse.
+- **Tokens with a purpose:** the questions link is an AES-256-GCM token of its own purpose, sealed with the purpose as authenticated data and in the payload, without expiry. An unsubscribe token cannot vote and a questions token cannot unsubscribe. Tokens sealed before the payload carried a purpose still work.
+- **Equal treatment:** a vote for a contact that no longer exists does the same Brevo round trips and gets the same answer as a stored one, so the endpoint cannot tell whether an address is still on the list.
+- **Missing attributes:** Brevo drops attribute names it does not know without an error and ignores values of the wrong type. The server reads the contact back after the update and reports `answers_attribute_missing` when the answers did not land, and the visitor sees the normal error message.
+- **Sharing without tracking:** "Share on Threads" is a plain link to `https://www.threads.com/intent/post?text=…`, the web intent documented by Meta, opened in a new tab with `noopener noreferrer`. Nothing from Threads is loaded on our pages, so G8 stays green. Umami counts a vote as `questions_answered`, without properties.
+
+## ADR 21: Turn away server action probes in the proxy
+
+**Status:** accepted, 2026-10-19
+
+Scanners send `POST` requests with a `Next-Action` header and made-up IDs such as `y`, looking for Next.js server actions. The app has no server actions, so Next answered "Server action not found." and wrote a multi-line error with a stack trace to the log for every probe, which buried the events that matter. The proxy now answers every request that carries the header with an empty 404, the resource policy and `no-store`, before Next sees it, and logs a single `server_action_probe` line without path, address or header values. A second proxy matcher entry runs on every path when the header is present, so the static and mail asset paths that the main matcher skips are covered too. If the app ever gains a server action, this check has to go first, and the e2e test in `security.spec.ts` will say so.
