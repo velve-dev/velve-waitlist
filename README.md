@@ -30,27 +30,27 @@ This is the waitlist for Velve, a platform for apps, databases and file storage 
 - Unsubscribing through our link, RFC 8058 one-click requests and Brevo's webhook, each of which deletes the contact.
 - Rate limits per network, per mailbox and per day, a honeypot and a minimum fill time, all tunable through the environment.
 - A strict content security policy, cookieless self-hosted analytics through our own origin, and a noindex guard until the legal review is done.
-- Imprint, privacy, 404 and 500 pages, health routes, and a Dokploy image.
+- Imprint, privacy, 404 and 500 pages, health routes, and a container image deployed to Scaleway.
 
 ## What is not built
 
-- A store shared between instances. The limiters live in memory, so the app runs as a single instance. More than one needs Valkey.
+- A store shared between instances. The limiters live in memory, so the app runs as a single instance. More than one needs a shared store.
 - Proof-of-work bot protection. ALTCHA is the documented next step.
 - Anything outside the waitlist. Velve itself is not in this repository.
 
 ## Back these up
 
-`TOKEN_KEY` seals every confirmation and unsubscribe link. Without it, no link that was ever sent works again, so keep it in a password manager as well as in Dokploy.
+`TOKEN_KEY` seals every confirmation and unsubscribe link. Without it, no link that was ever sent works again, so keep it in a password manager as well as in the container's secrets.
 
 ## Operating conditions
 
-The app runs as one instance behind one Traefik hop on Levo Studio infrastructure, and Brevo is its only external service. The site stays out of search engines until the legal review list in `src/content/legal.ts` is empty and `SITE_INDEXABLE` is `true`.
+The app runs as one Scaleway Serverless Container instance in Amsterdam, operated by Levo Studio, and Brevo is its only external service. The site stays out of search engines until the legal review list in `src/content/legal.ts` is empty and `SITE_INDEXABLE` is `true`.
 
 ## Read on
 
 - [Guide](docs/guide/README.md): how the pieces fit together, in full sentences.
 - [Architecture](docs/architecture/README.md): requests, flows and trust boundaries as diagrams.
-- [Brevo](docs/guide/brevo.md) and [Dokploy](docs/guide/dokploy.md): what to set up where.
+- [Brevo](docs/guide/brevo.md) and [Scaleway](docs/guide/scaleway.md): what to set up where.
 - [Reference](docs/details/reference.md): every environment variable, route, gate and log event.
 - [Decisions](docs/decisions.md) and [Roadmap](TODO.md).
 

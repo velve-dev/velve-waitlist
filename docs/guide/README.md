@@ -34,13 +34,13 @@ The welcome mail links to `/unsubscribe/<token>`, which asks once and then delet
 
 ## Protection
 
-Limits apply at four levels: Traefik per IP for `/api/*`, the app per network for sign-ups, per mailbox for confirmation mails, and per day for all mails together. Link and webhook routes have their own per-network limits in the proxy. Network keys are HMACs of the client address with a salt that changes every UTC day, and IPv6 addresses count per /64. Raw addresses, names, emails and tokens are never stored or logged. The logs only carry event names and stable codes.
+Limits apply at three levels in the app: per network for sign-ups, per mailbox for confirmation mails, and per day for all mails together. The client address comes from `X-Real-IP`, which Scaleway sets. Link and webhook routes have their own per-network limits in the proxy. Network keys are HMACs of the client address with a salt that changes every UTC day, and IPv6 addresses count per /64. Raw addresses, names, emails and tokens are never stored or logged. The logs only carry event names and stable codes.
 
 Every page gets a nonce-based content security policy without `unsafe-inline`, and the end-to-end suite fails on any request to another origin, any cookie, any browser storage and any policy violation.
 
 ## Analytics
 
-Umami runs on Levo Studio's servers. The browser loads `/stats/script.js` and posts to `/stats/api/send` on our own origin, and the server relays to Umami without the client address. Automatic tracking is off: the page sends page views with token paths reduced to `/confirm` and `/unsubscribe`, plus the events `signup_submitted` and `signup_confirmed`, without properties. The relay refuses anything else.
+Umami runs on Scaleway as well, operated by Levo Studio, and the server reaches it over HTTPS. The browser loads `/stats/script.js` and posts to `/stats/api/send` on our own origin, and the server relays to Umami without the client address. Automatic tracking is off: the page sends page views with token paths reduced to `/confirm` and `/unsubscribe`, plus the events `signup_submitted` and `signup_confirmed`, without properties. The relay refuses anything else.
 
 ## Mails
 
@@ -48,7 +48,7 @@ The confirmation and welcome mails are rendered on the server as dark table HTML
 
 ## Configuration
 
-Every secret and every tunable comes from the environment. `.env.example` lists the keys, [`docs/details/reference.md`](../details/reference.md) explains each one with its default, and the [Dokploy guide](dokploy.md) says where they go.
+Every secret and every tunable comes from the environment. `.env.example` lists the keys, [`docs/details/reference.md`](../details/reference.md) explains each one with its default, and the [Scaleway guide](scaleway.md) says where they go.
 
 ## Gates
 

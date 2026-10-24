@@ -136,3 +136,13 @@ The per-mailbox interval is spent before the mail goes out, because the mail is 
 **Status:** accepted, 2026-10-18
 
 Because suppressed sign-ups answer like new ones (ADR 4), someone who signs up twice sees "Check your inbox" without a second mail. Under "Check your inbox" every visitor now reads "Nothing there? Check your spam folder. Each address gets one link a day." It is shown to everyone, so it reveals nothing about any address. The owner approved the wording as a deliberate exception to the rule against naming time limits in copy. The sentence is only true while `CONFIRM_MAIL_INTERVAL_SECONDS` stays at 86400.
+
+## ADR 20: Run on Scaleway Serverless Containers
+
+**Status:** accepted, 2026-10-24, supersedes ADR 6 and the Dokploy and Traefik parts of earlier records
+
+Levo Studio moves its hosting from the self-run Dokploy cluster to Scaleway, so its own servers no longer need to be operated by hand. The waitlist runs as one Serverless Container in the Amsterdam region. The deploy workflow pushes the image to GHCR and to the private Scaleway registry and then points the container at the new SHA tag through the Serverless Containers API, instead of calling a Dokploy webhook. Until the repository variable `SCW_CONTAINER_ID` is set, it only publishes the image, so the first container can be created from a real image.
+
+There is no longer a Traefik hop in front of the app. Scaleway sets `X-Real-IP` to the address that connected and overwrites a value sent by the client, while `X-Forwarded-For` can end with an internal Scaleway hop. Keying on the last `X-Forwarded-For` entry would put every visitor into one bucket and let the first few sign-ups block everyone, so the limiters now use `X-Real-IP` first and the last `X-Forwarded-For` entry only as a fallback. The HMAC and daily salt from ADR 6 stay unchanged.
+
+Scaleway has no per-address rate limit in front of a container, so the Traefik limit on `/api/*` is dropped. The limits inside the app remain and still cover every route that sends mail or touches Brevo. The container keeps exactly one instance, because the limiters live in memory. `Dockerfile.dokploy` keeps its name to avoid churn in the gates that reference it.
