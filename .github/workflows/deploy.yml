@@ -70,7 +70,7 @@ jobs:
         run: |
           set -eu
           api="https://api.scaleway.com/containers/v1/regions/$SCW_REGION/containers/$SCW_CONTAINER_ID"
-          curl --fail-with-body --silent --show-error --max-time 30 -X PATCH "$api" \
+          curl --fail --silent --show-error --max-time 30 -X PATCH "$api" \
             -H "X-Auth-Token: $SCW_SECRET_KEY" -H "Content-Type: application/json" \
             -d "{\"image\": \"$NEW_IMAGE\"}" >/dev/null
           sleep 10
@@ -85,7 +85,7 @@ jobs:
               exit 0
             fi
             if [ "$status" = "error" ]; then
-              echo "Scaleway reports an error, see the container logs" >&2
+              printf '%s' "$body" | jq -r '"Scaleway reports an error: " + (.error_message // "no message")' >&2
               exit 1
             fi
             attempt=$((attempt + 1))
