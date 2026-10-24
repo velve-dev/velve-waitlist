@@ -57,7 +57,7 @@ export const privacy = {
     },
     {
       heading: "Where it lives and who helps",
-      text: "This website runs on Scaleway Serverless Containers in Amsterdam, operated by Levo Studio. Scaleway SAS, 8 rue de la Ville-l'Évêque, 75008 Paris, France, provides the infrastructure under a data processing agreement. The list itself is kept at Brevo, operated by Sendinblue SAS, 17 rue Salneuve, 75017 Paris, France, which stores your address in the EU and sends our emails on our behalf under a data processing agreement. Brevo counts email opens and clicks only anonymously, as totals that are never linked to you. Page views are counted with Umami, which Levo Studio runs on the same Scaleway infrastructure, without cookies, IP addresses or profiles.",
+      text: "Levo Studio runs this website on Scaleway Serverless Containers in Amsterdam. Scaleway SAS, 8 rue de la Ville-l'Évêque, 75008 Paris, France, provides the infrastructure under a data processing agreement. The list itself is kept at Brevo, operated by Sendinblue SAS, 17 rue Salneuve, 75017 Paris, France, which stores your address in the EU and sends our emails on our behalf under a data processing agreement. Brevo counts email opens and clicks only anonymously, as totals that are never linked to you. Page views are counted with Umami, which Levo Studio runs on the same Scaleway infrastructure, without cookies, IP addresses or profiles.",
     },
     {
       heading: "How long we keep it",
