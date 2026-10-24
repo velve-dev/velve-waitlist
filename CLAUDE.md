@@ -104,20 +104,22 @@ Docs for people: `README.md` and `docs/guide/` explain in full sentences with di
 
 ## Deployment
 
-This app runs on Levo Studio infrastructure with Dokploy.
+This app runs as one Scaleway Serverless Container in `nl-ams`, operated by Levo Studio. Setup and settings are in [`docs/guide/scaleway.md`](docs/guide/scaleway.md).
 
-- **Port 8674** everywhere: locally, in the build, `EXPOSE`, the Dockerfile and Traefik. Never 3000.
+- **Port 8674** everywhere: locally, in the build, `EXPOSE`, the Dockerfile and the container settings. Never 3000.
 - **Health:** `GET /api/health` is public, touches no dependency and always returns 200 with `status`, `service` and `timestamp`. `GET /api/health/detailed` checks Brevo with a 2 s timeout, needs `Authorization: Bearer <HEALTH_TOKEN>`, and returns 200 for `ok` or `degraded` and 503 for `error`, without hostnames, credentials or stack traces. The container `HEALTHCHECK` always uses the simple route.
-- **`Dockerfile.dokploy`:** three stages (deps, build, slim runtime from Next.js `standalone`), pinned base image tags, a non-root user, `EXPOSE 8674` and `ENV PORT=8674`, a `HEALTHCHECK` on the simple route, no secrets or credential `ARG`s, `CMD ["node", "server.js"]`, and no Traefik labels or networks.
-- **`.github/workflows/deploy.yml`:** builds the image, pushes it to GHCR as `latest` and the commit SHA, verifies it with `docker buildx imagetools inspect`, and only then calls `DEPLOYMENT_WEBHOOK_URL` from the secrets. A non-2xx answer fails the job. Never call the webhook yourself.
+- **`Dockerfile.dokploy`:** the name is kept from the Dokploy days. Three stages (deps, build, slim runtime from Next.js `standalone`), pinned base image tags, a non-root user, `EXPOSE 8674` and `ENV PORT=8674`, a `HEALTHCHECK` on the simple route, no secrets or credential `ARG`s, `CMD ["node", "server.js"]`, and no proxy labels or networks.
+- **`.github/workflows/deploy.yml`:** builds the image, pushes it to GHCR and to the Scaleway registry as `latest` and the commit SHA, verifies both with `docker buildx imagetools inspect`, and only then points the container named in `SCW_CONTAINER_ID` at the SHA tag and waits for `ready`. Never call the Scaleway API against production yourself.
+- **Client address:** `X-Real-IP`, set by Scaleway, comes first. The last `X-Forwarded-For` entry is only a fallback.
+- **One instance:** the limiters live in memory, so the container runs with exactly one instance.
 - `.dockerignore` excludes `.env*`, `.git`, `node_modules`, `.next`, test reports and build artefacts.
-- Infrastructure is self-hosted in Frankfurt, Falkenstein or Eygelshoven (NL). No AWS, GCP, Azure, Vercel or Supabase, and nothing outside the EU. Brevo is the one deliberate exception, as the EU mail and list provider.
+- Hosting stays in the EU: Scaleway in Amsterdam, operated by Scaleway SAS in Paris. No AWS, GCP, Azure, Vercel or Supabase. Brevo is the one deliberate exception, as the EU mail and list provider.
 - Writes against production happen only with the owner's explicit confirmation in the same message.
 
 ## Hard stops: always ask the owner first
 
 - Anything that changes the Brevo account: lists, attributes, settings, webhooks, campaigns, API keys.
-- Calling the deploy webhook or changing anything in Dokploy.
+- Changing the Scaleway container, its secrets, the registry or the DNS records.
 - Adding a service, domain or package that contacts a third party at runtime. Brevo, from the server only, is the single allowed external service.
 - Changing legal texts or approved copy.
 - A mail test that contradicts a sentence in the copy or the privacy policy.

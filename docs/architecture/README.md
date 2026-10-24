@@ -7,20 +7,20 @@ flowchart LR
   subgraph Browser
     page[Waitlist page]
   end
-  subgraph Levo["Levo Studio infrastructure"]
-    traefik[Traefik<br/>TLS, rate limit on /api/*]
+  subgraph Levo["Scaleway nl-ams, run by Levo Studio"]
+    edge[Scaleway edge<br/>TLS, sets X-Real-IP]
     app[Next.js app<br/>stateless, one instance]
-    umami[Umami<br/>internal URL]
+    umami[Umami<br/>analytics.levo-studio.com]
   end
   subgraph Brevo["Brevo (EU)"]
     api[Contacts and transactional API]
     list[(Velve waitlist list)]
     campaigns[Campaigns]
   end
-  page -- "same origin only" --> traefik --> app
+  page -- "same origin only" --> edge --> app
   app -- "api-key, server side" --> api --> list
   app -- "events without client address" --> umami
-  campaigns -- "unsubscribe webhook, bearer token" --> traefik
+  campaigns -- "unsubscribe webhook, bearer token" --> edge
 ```
 
 The browser only ever talks to `velve.dev`. Brevo and Umami are reached from the server. The app keeps nothing on disk. Its only state is the in-memory limiters, which reset on restart.
