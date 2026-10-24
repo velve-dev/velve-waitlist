@@ -3,7 +3,7 @@ export const pendingLegalReview: readonly string[] = [];
 
 export const imprint = {
   title: "Imprint",
-  subline: "Required by German law, kept as short as it allows.",
+  subline: "The boring but important stuff, kept as short as possible.",
   sections: [
     {
       heading: "Provider · § 5 DDG",
@@ -45,7 +45,7 @@ export const privacy = {
   title: "Privacy",
   subline:
     "Short version: we store your email and, if you give it, your first name. We use them to send you updates. That's it.",
-  updated: "last updated 18 oct 2026",
+  updated: "last updated 24 oct 2026",
   sections: [
     {
       heading: "Who is responsible",
@@ -57,11 +57,11 @@ export const privacy = {
     },
     {
       heading: "Where it lives and who helps",
-      text: "This website runs on infrastructure operated by Levo Studio on rented servers in Germany and the Netherlands: Hetzner in Falkenstein, Datalix in Frankfurt and Virtbase in the Netherlands, each under a data processing agreement. The list itself is kept at Brevo, operated by Sendinblue SAS, 17 rue Salneuve, 75017 Paris, France, which stores your address in the EU and sends our emails on our behalf under a data processing agreement. Brevo counts email opens and clicks only anonymously, as totals that are never linked to you. Page views are counted with Umami on Levo Studio's servers, without cookies, IP addresses or profiles.",
+      text: "Levo Studio runs this website on Scaleway Serverless Containers in Amsterdam. Scaleway SAS, 8 rue de la Ville-l'Évêque, 75008 Paris, France, provides the infrastructure under a data processing agreement. The list itself is kept at Brevo, operated by Sendinblue SAS, 17 rue Salneuve, 75017 Paris, France, which stores your address in the EU and sends our emails on our behalf under a data processing agreement. Brevo counts email opens and clicks only anonymously, as totals that are never linked to you. Page views are counted with Umami, which Levo Studio runs on the same Scaleway infrastructure, without cookies, IP addresses or profiles.",
     },
     {
       heading: "How long we keep it",
-      text: "Until you unsubscribe or ask us to delete it, then it is deleted, not just hidden. If you never click the confirmation link, your address never makes it onto the list. Our server logs contain no email addresses, names or IP addresses, stay on our own servers and are not used for analytics. This site sets no cookies and loads nothing from anyone else.",
+      text: "Until you unsubscribe or ask us to delete it, then it is deleted, not just hidden. If you never click the confirmation link, your address never makes it onto the list. Our server logs contain no email addresses, names or IP addresses, stay with our hosting provider in the EU and are not used for analytics. This site sets no cookies and loads nothing from anyone else.",
     },
     {
       heading: "Your rights",
