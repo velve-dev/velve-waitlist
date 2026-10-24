@@ -30,7 +30,7 @@ Every key is listed in `.env.example` without a value. Secrets have no default a
 | `CONFIRM_TOKEN_TTL_SECONDS`     | no     | 604800                     | How long a confirmation link stays valid.                                                                             |
 | `CONSENT_VERSION`               | no     | none, required             | Version of the consent text, stored with each contact.                                                                |
 | `HEALTH_TOKEN`                  | yes    | none, required, 32+ chars  | Bearer token for the detailed health route.                                                                           |
-| `UMAMI_URL`                     | no     | none                       | Internal Umami URL. Without it and the website ID, no analytics run.                                                  |
+| `UMAMI_URL`                     | no     | none                       | Umami base URL, reached from the server over HTTPS. Without it and the website ID, no analytics run.                  |
 | `UMAMI_WEBSITE_ID`              | no     | none                       | Umami website ID.                                                                                                     |
 
 ## Routes

@@ -40,7 +40,7 @@ Every page gets a nonce-based content security policy without `unsafe-inline`, a
 
 ## Analytics
 
-Umami runs on Scaleway, operated by Levo Studio. The browser loads `/stats/script.js` and posts to `/stats/api/send` on our own origin, and the server relays to Umami without the client address. Automatic tracking is off: the page sends page views with token paths reduced to `/confirm` and `/unsubscribe`, plus the events `signup_submitted` and `signup_confirmed`, without properties. The relay refuses anything else.
+Umami runs on Scaleway as well, operated by Levo Studio, and the server reaches it over HTTPS. The browser loads `/stats/script.js` and posts to `/stats/api/send` on our own origin, and the server relays to Umami without the client address. Automatic tracking is off: the page sends page views with token paths reduced to `/confirm` and `/unsubscribe`, plus the events `signup_submitted` and `signup_confirmed`, without properties. The relay refuses anything else.
 
 ## Mails
 

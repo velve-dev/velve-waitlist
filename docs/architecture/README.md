@@ -10,7 +10,7 @@ flowchart LR
   subgraph Levo["Scaleway nl-ams, run by Levo Studio"]
     edge[Scaleway edge<br/>TLS, sets X-Real-IP]
     app[Next.js app<br/>stateless, one instance]
-    umami[Umami<br/>analytics.levo-studio.com]
+    umami[Umami<br/>UMAMI_URL over HTTPS]
   end
   subgraph Brevo["Brevo (EU)"]
     api[Contacts and transactional API]
