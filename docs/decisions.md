@@ -146,3 +146,9 @@ Levo Studio moves its hosting from the self-run Dokploy cluster to Scaleway, so 
 There is no longer a Traefik hop in front of the app. Scaleway sets `X-Real-IP` to the address that connected and overwrites a value sent by the client, while `X-Forwarded-For` can end with an internal Scaleway hop. Keying on the last `X-Forwarded-For` entry would put every visitor into one bucket and let the first few sign-ups block everyone, so the limiters now use `X-Real-IP` first and the last `X-Forwarded-For` entry only as a fallback. The HMAC and daily salt from ADR 6 stay unchanged.
 
 Scaleway has no per-address rate limit in front of a container, so the Traefik limit on `/api/*` is dropped. The limits inside the app remain and still cover every route that sends mail or touches Brevo. The container keeps exactly one instance, because the limiters live in memory. `Dockerfile.dokploy` keeps its name to avoid churn in the gates that reference it.
+
+## ADR 21: Name Scaleway as the host in the privacy policy
+
+**Status:** accepted, 2026-10-24, supersedes the hosting and logs points of ADR 17
+
+The waitlist and Umami now run on Scaleway (ADR 20), so the privacy policy no longer names Hetzner, Datalix and Virtbase. It names Scaleway SAS, 8 rue de la Ville-l'Évêque, 75008 Paris, France, as the provider under a data processing agreement, with the Amsterdam region, and says that Umami runs on the same infrastructure. The sentence on logs now says they stay with the hosting provider in the EU instead of on our own servers, because Scaleway Cockpit keeps the container output. The address comes from Scaleway's legal notice. The date line moves to 24 Oct 2026. The owner asked for the change and approves the wording by merging.
