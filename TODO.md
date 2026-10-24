@@ -4,7 +4,6 @@
 
 - [ ] Brevo set up as in [`docs/guide/brevo.md`](docs/guide/brevo.md), including both unsubscribe webhooks and the custom unsubscribe page.
 - [ ] Mail test done and recorded, including Apple Mail, Gmail and Outlook.
-- [ ] Privacy policy wording for Scaleway, approved by the owner. `src/content/legal.ts` and `scripts/approved-copy.json` still name Hetzner, Datalix and Virtbase as hosts and say the server logs stay on our own servers.
 - [ ] Set `SITE_INDEXABLE=true` on the Scaleway container. The legal review list in the code is empty.
 - [ ] Decide ADR 3: the two colours raised for contrast.
 - [ ] Umami website created and its ID set.
