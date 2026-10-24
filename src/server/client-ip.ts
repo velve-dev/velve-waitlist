@@ -1,4 +1,4 @@
-// Picks the client network that Traefik appended to the request.
+// Picks the client network the platform reports for the request.
 import "server-only";
 
 const mappedIpv4 = /^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/i;
@@ -29,9 +29,12 @@ function networkOf(address: string): string {
   return bare.includes(":") ? ipv6Prefix(bare) : bare;
 }
 
+function lastForwardedAddress(headers: Headers): string {
+  return headers.get("x-forwarded-for")?.split(",").at(-1)?.trim() ?? "";
+}
+
 export function clientNetwork(headers: Headers): string {
-  const forwarded = headers.get("x-forwarded-for");
-  const last = forwarded?.split(",").at(-1)?.trim();
-  const address = last !== undefined && last !== "" ? last : (headers.get("x-real-ip") ?? "");
+  const realIp = headers.get("x-real-ip")?.trim() ?? "";
+  const address = realIp !== "" ? realIp : lastForwardedAddress(headers);
   return address === "" ? "unknown" : networkOf(address);
 }
