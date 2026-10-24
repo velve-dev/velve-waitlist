@@ -3,7 +3,7 @@ export const pendingLegalReview: readonly string[] = [];
 
 export const imprint = {
   title: "Imprint",
-  subline: "The boring but important stuff, kept as short as possible.",
+  subline: "Boring but important, and kept as short as possible.",
   sections: [
     {
       heading: "Provider · § 5 DDG",
