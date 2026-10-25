@@ -53,3 +53,5 @@ Every secret and every tunable comes from the environment. `.env.example` lists 
 ## Gates
 
 `pnpm verify` runs formatting, ESLint and knip, TypeScript, the comment, secret and copy checks, unit tests, the mail check, the production build with its legal guard, and the end-to-end suite with accessibility, privacy and header checks. The pre-push hook runs it before every push. `pnpm docker:check` builds and starts the image and runs in CI.
+
+Once a week Dependabot opens pull requests for new versions of the actions, the npm packages and the Node base image. They run through the same CI as every other pull request before the owner merges them.
