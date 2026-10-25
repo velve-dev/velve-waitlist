@@ -68,6 +68,9 @@ function parseUpdates(text: string): Update[] {
 }
 
 const updates = parseUpdates(config);
+const topLevelKeys = config.split("\n").flatMap((line) => /^([\w-]+):/.exec(line)?.[1] ?? []);
+const allowedKey =
+  /^(directory|schedule\.(interval|day|time|timezone)|groups\.[^.]+\.update-types|commit-message\.(prefix|prefix-development|include))$/;
 
 function updateFor(ecosystem: string): Update {
   const update = updates.find((candidate) => candidate.ecosystem === ecosystem);
@@ -87,10 +90,15 @@ function groupUpdateTypes(update: Update): Map<string, string[] | undefined> {
 }
 
 describe("dependabot.yml", () => {
-  it("covers actions, npm and Docker", () => {
-    expect(updates.map((update) => update.ecosystem)).toEqual(
-      expect.arrayContaining(Object.keys(agreedPrefixes)),
+  it("covers actions, npm and Docker once each", () => {
+    expect(updates.map((update) => update.ecosystem).sort()).toEqual(
+      Object.keys(agreedPrefixes).sort(),
     );
+  });
+
+  it("holds nothing but version 2 and the updates", () => {
+    expect(topLevelKeys).toEqual(["version", "updates"]);
+    expect(config.startsWith("version: 2\n")).toBe(true);
   });
 
   it("contains no comment", () => {
@@ -102,6 +110,11 @@ describe("dependabot.yml", () => {
       const update = updateFor(ecosystem);
       expect(update.values.get("schedule.interval")).toEqual(["weekly"]);
       expect(update.values.get("directory")).toEqual(["/"]);
+    });
+
+    it("sets nothing that could skip, hold back or regroup updates", () => {
+      const keys = [...updateFor(ecosystem).values.keys()];
+      expect(keys.filter((key) => !allowedKey.test(key))).toEqual([]);
     });
 
     it("groups minor and patch updates", () => {
