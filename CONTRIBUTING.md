@@ -25,6 +25,8 @@ git config velve.identity 'Your Name <you@example.com>'
 
 The identity you set there must match the author and committer of every commit you push.
 
+Git hands a hook `GIT_DIR` and other `GIT_*` variables that point at the real repository, and the unit tests run inside the hook. A unit test that runs git or a script that runs git must therefore use `sandboxGit` or `sandboxEnv` from `tests/support/sandbox-git.ts`, which drop those variables. `tests/support/git-guard.ts` fails any test file in which git ran with the inherited environment.
+
 ## Gates
 
 `pnpm verify` runs formatting, lint and unused-code checks, types, the comment, secret and copy checks, unit tests, the build and the end-to-end suite, which covers accessibility, privacy and security headers. A push only goes out when all of them are green.
