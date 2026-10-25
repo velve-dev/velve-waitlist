@@ -11,5 +11,6 @@ export default defineConfig({
   test: {
     include: ["tests/unit/**/*.test.ts"],
     environment: "node",
+    setupFiles: ["tests/support/git-guard.ts"],
   },
 });
