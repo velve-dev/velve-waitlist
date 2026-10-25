@@ -152,3 +152,13 @@ Scaleway has no per-address rate limit in front of a container, so the Traefik l
 **Status:** accepted, 2026-10-24, supersedes the hosting and logs points of ADR 17
 
 The waitlist and Umami now run on Scaleway (ADR 20), so the privacy policy no longer names Hetzner, Datalix and Virtbase. It names Scaleway SAS, 8 rue de la Ville-l'Évêque, 75008 Paris, France, as the provider under a data processing agreement, with the Amsterdam region, and says that Umami runs on the same infrastructure. The sentence on logs now says they stay with the hosting provider in the EU instead of on our own servers, because Scaleway Cockpit keeps the container output. The address comes from Scaleway's legal notice. The date line moves to 24 Oct 2026. The owner asked for the change and approves the wording by merging.
+
+## ADR 22: Dependabot proposes weekly dependency updates
+
+**Status:** accepted, 2026-10-25
+
+Actions, npm packages and the Node base image in `Dockerfile.dokploy` are pinned to exact versions and digests, so they only move when someone bumps them. `.github/dependabot.yml` lets Dependabot check all three once a week from the repository root. Minor and patch updates of each ecosystem arrive together in one pull request, and every major update arrives in its own, so a breaking change can be read and tested on its own. Dependabot finds `Dockerfile.dokploy` by itself, because it reads every file in the directory whose name contains `Dockerfile`.
+
+Commits and pull request titles start with `build(deps):` for npm and Docker and `ci(deps):` for actions, because the repository allows only the Conventional Commit types listed in `CLAUDE.md`. An npm update that touches only development dependencies reads `build(deps-dev):`, since Dependabot sets the scope itself. A new Node base image also needs `.nvmrc` and `engines.node` moved in the same pull request. Dependabot changes only `Dockerfile.dokploy`, and pnpm 12 no longer reads `engine-strict` from `.npmrc`, so the image would build on the new version anyway. `tests/unit/node-version.test.ts` compares the three, and the verify job in CI shows the mismatch.
+
+Dependabot's commits are authored by the Dependabot bot, not by the owner's identity, and their body carries Dependabot's metadata, with lines like `updated-dependencies:` and a sign-off line. The owner accepts this when merging such pull requests through GitHub. The identity and trailer rules govern commits made by people and agents in this repository, and Dependabot's commits pass the same CI before they are merged.
