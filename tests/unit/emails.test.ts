@@ -1,4 +1,4 @@
-import { execFileSync, spawnSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -9,6 +9,7 @@ import {
   buildWelcomeMail,
   siteLinks,
 } from "../../emails/mails";
+import { sandboxEnv, sandboxGit } from "../support/sandbox-git";
 
 const links = siteLinks("https://velve.dev");
 
@@ -52,11 +53,11 @@ describe("emails:check", () => {
     try {
       mkdirSync(path.join(root, "emails"));
       writeFileSync(path.join(root, "emails/update.html"), "<p>stale</p>");
-      execFileSync("git", ["init", "-q"], { cwd: root });
+      sandboxGit(root, "init", "-q");
       const result = spawnSync(
         process.execPath,
         [path.resolve(import.meta.dirname, "../../scripts/emails-check.ts")],
-        { env: { ...process.env, CHECK_ROOT: root }, encoding: "utf8" },
+        { env: sandboxEnv({ CHECK_ROOT: root }), encoding: "utf8" },
       );
       expect(result.status).toBe(1);
       expect(result.stderr).toContain("out of date");
