@@ -60,7 +60,7 @@ Every key is listed in `.env.example` without a value. Secrets have no default a
 | Comments         | `pnpm comments:lint` | One header line of ten words at most per file.                                                      |
 | Secrets          | `pnpm secrets:lint`  | No env files, keys or tokens in the repository, no values in `.env.example`.                        |
 | G10 Copy         | `pnpm copy:lint`     | No forbidden phrase, every approved string verbatim.                                                |
-| G4 Unit          | `pnpm test`          | Validation, names, greeting, tokens, limits, Brevo client contract, flows.                          |
+| G4 Unit          | `pnpm test`          | Validation, names, greeting, tokens, limits, Brevo client contract, flows, workflow action pins.    |
 | G11 Mails        | `pnpm emails:check`  | HTML and text for each mail, no foreign images, no tracking parameters, unsubscribe where required. |
 | G5 and G12 Build | `pnpm build`         | Production build, fails if indexable with `[TODO` in the legal texts.                               |
 | G6 to G9 E2E     | `pnpm e2e`           | Every state at 375, 768 and 1280 px, full flow against the Brevo mock, axe, privacy and headers.    |
