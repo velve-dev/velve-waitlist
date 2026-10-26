@@ -22,7 +22,7 @@ A visitor leaves an email address and, if they like, a first name. Nothing is st
 
 ## Signing up
 
-The page is rendered per request because it embeds two things: a fresh CSP nonce and a sealed form token holding the render time. When someone submits, `POST /api/subscribe` first checks the daily send cap, then the per-network limit, then the address. Sign-ups that another site's page sends from a visitor's browser, recognised by `Sec-Fetch-Site` or by an `Origin` that differs from the request's own host, get the normal success answer and no mail. So do bots that fill the hidden `website` field, submit faster than `MIN_FORM_SECONDS` or send no valid form token, and so does the second sign-up for the same mailbox within `CONFIRM_MAIL_INTERVAL_SECONDS`, where plus tags and Gmail dots count as the same mailbox. The confirmation mail goes out after the response, so every outcome answers in the same time.
+The page is rendered per request because it embeds two things: a fresh CSP nonce and a sealed form token holding the render time. When someone submits, `POST /api/subscribe` first checks the daily send cap, then the per-network limit, then the address. Sign-ups that another site's page sends from a visitor's browser, recognised by a `Sec-Fetch-Site` header other than `same-origin`, get the normal success answer and no mail. So do bots that fill the hidden `website` field, submit faster than `MIN_FORM_SECONDS` or send no valid form token, and so does the second sign-up for the same mailbox within `CONFIRM_MAIL_INTERVAL_SECONDS`, where plus tags and Gmail dots count as the same mailbox. The confirmation mail goes out after the response, so every outcome answers in the same time.
 
 ## Confirming
 
