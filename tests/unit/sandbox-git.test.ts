@@ -8,6 +8,9 @@ import { sandboxEnv, sandboxGit } from "../support/sandbox-git";
 
 const repoRoot = path.resolve(import.meta.dirname, "../..");
 const directories: string[] = [];
+const gitVariablesWhileLoading = Object.keys(process.env)
+  .filter((key) => key.startsWith("GIT_"))
+  .sort();
 
 type Decoy = { main: string; linked: string; gitDir: string };
 
@@ -87,6 +90,10 @@ afterEach(() => {
 });
 
 describe("sandbox git", () => {
+  it("guards git that runs while a test file loads", () => {
+    expect(gitVariablesWhileLoading).toEqual(["GIT_DIR", "GIT_PREFIX", "GIT_TRACE"]);
+  });
+
   const environments: [string, (decoy: Decoy) => Record<string, string>][] = [
     [
       "a pre-push hook in a linked worktree",
