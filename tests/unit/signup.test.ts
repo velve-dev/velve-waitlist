@@ -289,3 +289,164 @@ describe("handleSignup abuse resistance", () => {
     expect(output).not.toMatch(/alex/i);
   });
 });
+
+describe("handleSignup from other sites", () => {
+  function fromBrowser(
+    services: ReturnType<typeof setup>["services"],
+    body: Record<string, unknown>,
+    headers: Record<string, string>,
+    ip: string,
+  ) {
+    return handleSignup(
+      new Request("https://velve.test/api/subscribe", {
+        method: "POST",
+        headers: { "content-type": "text/plain;charset=UTF-8", "x-forwarded-for": ip, ...headers },
+        body: JSON.stringify(body),
+      }),
+      services,
+    );
+  }
+
+  const sameOrigin = {
+    host: "velve.test",
+    origin: "https://velve.test",
+    "sec-fetch-site": "same-origin",
+  };
+  const crossSite: Record<string, string>[] = [
+    { host: "velve.test", origin: "https://evil.example", "sec-fetch-site": "cross-site" },
+    { host: "velve.test", origin: "https://blog.velve.test", "sec-fetch-site": "same-site" },
+    { host: "velve.test", "sec-fetch-site": "none" },
+    { host: "velve.test", origin: "https://velve.test", "sec-fetch-site": "cross-site" },
+    { host: "velve.test", origin: "https://evil.example" },
+    { host: "velve.test", origin: "null" },
+    { host: "velve.test", origin: "https://velve.test.evil.example" },
+    { host: "velve.test", origin: "https://velve.test:8443" },
+    { origin: "https://velve.test" },
+  ];
+
+  it("answers cross-site sign-ups like any suppressed one and sends nothing", async () => {
+    const { services, formToken } = setup({ SIGNUP_LIMIT_PER_IP: "1000" });
+    const fresh = await snapshot(
+      await fromBrowser(
+        services,
+        { email: "real@company.com", formToken },
+        sameOrigin,
+        "198.51.100.50",
+      ),
+    );
+    for (const [index, headers] of crossSite.entries()) {
+      const answer = await snapshot(
+        await fromBrowser(
+          services,
+          { email: `victim${index}@company.com`, name: "Victim", formToken },
+          headers,
+          `198.51.100.${60 + index}`,
+        ),
+      );
+      expect(answer, JSON.stringify(headers)).toEqual(fresh);
+    }
+    await Promise.all(services.deferred);
+    expect(services.brevo.sent.map((mail) => mail.to.email)).toEqual(["real@company.com"]);
+  });
+
+  it("answers cross-site sign-ups as fast as accepted ones", async () => {
+    const { services, formToken } = setup({
+      SIGNUP_LIMIT_PER_IP: "1000",
+      CONFIRM_MAIL_INTERVAL_SECONDS: "1",
+      DAILY_SEND_CAP: "100000",
+    });
+    const timings: Record<"accepted" | "crossSite", number[]> = { accepted: [], crossSite: [] };
+    for (let round = 0; round < 30; round += 1) {
+      for (const [kind, headers] of [
+        ["accepted", sameOrigin],
+        ["crossSite", crossSite[0]!],
+      ] as const) {
+        const started = performance.now();
+        await fromBrowser(
+          services,
+          { email: `${kind}${round}@company.com`, formToken },
+          headers,
+          "198.51.100.51",
+        );
+        timings[kind].push(performance.now() - started);
+      }
+    }
+    await Promise.all(services.deferred);
+    const median = (values: number[]) =>
+      [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)]!;
+    expect(Math.abs(median(timings.accepted) - median(timings.crossSite))).toBeLessThan(5);
+    expect(services.brevo.sent.every((mail) => mail.to.email.startsWith("accepted"))).toBe(true);
+  });
+
+  it("keeps real visitors on every host working without comparing against SITE_URL", async () => {
+    const { services, formToken } = setup();
+    const visitors: Record<string, string>[] = [
+      { host: "velve.dev", origin: "https://velve.dev" },
+      { host: "www.velve.dev", origin: "https://www.velve.dev" },
+      { host: "WWW.Velve.dev", origin: "https://www.velve.dev" },
+      { host: "127.0.0.1:8674", origin: "http://127.0.0.1:8674" },
+      { host: "www.velve.dev", origin: "https://www.velve.dev", "sec-fetch-site": "same-origin" },
+      { host: "velve.dev", "sec-fetch-site": "same-origin" },
+      {},
+    ];
+    for (const [index, headers] of visitors.entries()) {
+      await fromBrowser(
+        services,
+        { email: `visitor${index}@company.com`, formToken },
+        headers,
+        `198.51.100.${80 + index}`,
+      );
+    }
+    await Promise.all(services.deferred);
+    expect(services.brevo.sent).toHaveLength(visitors.length);
+  });
+
+  it("leaves the mailbox interval and the daily cap to the real visitor", async () => {
+    const { services, formToken } = setup({ DAILY_SEND_CAP: "1" });
+    await fromBrowser(
+      services,
+      { email: "alex@company.com", formToken },
+      crossSite[0]!,
+      "198.51.100.90",
+    );
+    await fromBrowser(
+      services,
+      { email: "alex@company.com", formToken },
+      crossSite[4]!,
+      "198.51.100.91",
+    );
+    const real = await fromBrowser(
+      services,
+      { email: "alex@company.com", formToken },
+      sameOrigin,
+      "198.51.100.92",
+    );
+    expect(real.status).toBe(200);
+    await Promise.all(services.deferred);
+    expect(services.brevo.sent.map((mail) => mail.to.email)).toEqual(["alex@company.com"]);
+  });
+
+  it("logs a stable code without the address, name, network or token", async () => {
+    const { services, formToken } = setup();
+    const lines: string[] = [];
+    const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk) => {
+      lines.push(String(chunk));
+      return true;
+    });
+    try {
+      await fromBrowser(
+        services,
+        { email: "alex@company.com", name: "Alex", formToken },
+        crossSite[0]!,
+        "198.51.100.93",
+      );
+      await Promise.all(services.deferred);
+    } finally {
+      spy.mockRestore();
+    }
+    const output = lines.join("");
+    expect(output).toContain('"event":"signup_suppressed","code":"cross_site"');
+    expect(output).not.toMatch(/alex|198\.51\.100|evil/i);
+    expect(output).not.toContain(formToken);
+  });
+});
