@@ -52,4 +52,4 @@ Every secret and every tunable comes from the environment. `.env.example` lists 
 
 ## Gates
 
-`pnpm verify` runs formatting, ESLint and knip, TypeScript, the comment, secret and copy checks, unit tests, the mail check, the production build with its legal guard, and the end-to-end suite with accessibility, privacy and header checks. The pre-push hook runs it before every push. Unit tests run git only in throwaway sandboxes without the `GIT_*` variables git hands to hooks, so a run inside the hook never touches the repository being pushed. `pnpm docker:check` builds and starts the image and runs in CI.
+`pnpm verify` runs formatting, ESLint and knip, TypeScript, the comment, secret and copy checks, unit tests, the mail check, the production build with its legal guard, and the end-to-end suite with accessibility, privacy and header checks. The pre-push hook runs it before every push. `pnpm docker:check` builds and starts the image and runs in CI.
