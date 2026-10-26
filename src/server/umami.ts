@@ -9,7 +9,7 @@ const scriptLifetimeMs = 60 * 60 * 1000;
 const maxEventBytes = 16 * 1024;
 const upstreamTimeoutMs = 3000;
 
-function isAllowedEvent(body: string): boolean {
+function isAllowedEvent(body: string, websiteId: string): boolean {
   let parsed: unknown;
   try {
     parsed = JSON.parse(body);
@@ -19,9 +19,10 @@ function isAllowedEvent(body: string): boolean {
   if (typeof parsed !== "object" || parsed === null) return false;
   const { type, payload } = parsed as Record<string, unknown>;
   if (type !== "event" || typeof payload !== "object" || payload === null) return false;
-  const { name, data } = payload as Record<string, unknown>;
+  const { website, name, data } = payload as Record<string, unknown>;
   const isPageView = name === undefined;
   return (
+    website === websiteId &&
     data === undefined &&
     (isPageView ||
       (typeof name === "string" && (analyticsEvents as readonly string[]).includes(name)))
@@ -64,7 +65,7 @@ export async function relayEvent(request: Request): Promise<Response> {
   if (umami === null) return new Response(null, { status: 404 });
   const body = await readCappedText(request, maxEventBytes);
   if (body === null) return new Response(null, { status: 413 });
-  if (!isAllowedEvent(body)) return new Response(null, { status: 400 });
+  if (!isAllowedEvent(body, umami.websiteId)) return new Response(null, { status: 400 });
   try {
     const response = await fetch(`${umami.url}/api/send`, {
       method: "POST",
@@ -76,6 +77,11 @@ export async function relayEvent(request: Request): Promise<Response> {
       signal: AbortSignal.timeout(upstreamTimeoutMs),
       cache: "no-store",
     });
+    if (!response.ok) {
+      await response.body?.cancel();
+      logEvent("upstream_failed", "analytics_send_rejected");
+      return new Response(null, { status: 502, headers: { "cache-control": "no-store" } });
+    }
     return new Response(await response.text(), {
       status: response.status,
       headers: { "content-type": "application/json", "cache-control": "no-store" },
