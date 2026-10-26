@@ -317,11 +317,7 @@ describe("handleSignup from other sites", () => {
     { host: "velve.test", origin: "https://blog.velve.test", "sec-fetch-site": "same-site" },
     { host: "velve.test", "sec-fetch-site": "none" },
     { host: "velve.test", origin: "https://velve.test", "sec-fetch-site": "cross-site" },
-    { host: "velve.test", origin: "https://evil.example" },
-    { host: "velve.test", origin: "null" },
-    { host: "velve.test", origin: "https://velve.test.evil.example" },
-    { host: "velve.test", origin: "https://velve.test:8443" },
-    { origin: "https://velve.test" },
+    { host: "velve.test", origin: "null", "sec-fetch-site": "cross-site" },
   ];
 
   it("answers cross-site sign-ups like any suppressed one and sends nothing", async () => {
@@ -378,6 +374,26 @@ describe("handleSignup from other sites", () => {
     expect(services.brevo.sent.every((mail) => mail.to.email.startsWith("accepted"))).toBe(true);
   });
 
+  it("keeps sign-ups from browsers without Fetch Metadata whatever Host the platform passes", async () => {
+    const { services, formToken } = setup();
+    const olderBrowsers: Record<string, string>[] = [
+      { host: "velve-waitlist.functions.fnc.nl-ams.scw.cloud", origin: "https://velve.dev" },
+      { host: "localhost:8674", origin: "https://www.velve.dev" },
+      { host: "velve.dev:443", origin: "https://velve.dev" },
+      { origin: "https://velve.dev" },
+    ];
+    for (const [index, headers] of olderBrowsers.entries()) {
+      await fromBrowser(
+        services,
+        { email: `older${index}@company.com`, formToken },
+        headers,
+        `198.51.100.${100 + index}`,
+      );
+    }
+    await Promise.all(services.deferred);
+    expect(services.brevo.sent).toHaveLength(olderBrowsers.length);
+  });
+
   it("keeps real visitors on every host working without comparing against SITE_URL", async () => {
     const { services, formToken } = setup();
     const visitors: Record<string, string>[] = [
@@ -412,7 +428,7 @@ describe("handleSignup from other sites", () => {
     await fromBrowser(
       services,
       { email: "alex@company.com", formToken },
-      crossSite[4]!,
+      crossSite[1]!,
       "198.51.100.91",
     );
     const real = await fromBrowser(

@@ -26,14 +26,17 @@ test("sign-ups sent from another site get the normal answer and no mail", async 
       data: JSON.stringify({ email, formToken }),
     });
   const fromFetchMetadata = uniqueEmail("cross-site");
-  const fromOriginOnly = uniqueEmail("foreign-origin");
+  const fromSibling = uniqueEmail("same-site");
   const visitor = uniqueEmail("own-origin");
   const answers = [
     await signUpWith(fromFetchMetadata, {
       origin: "https://evil.example",
       "sec-fetch-site": "cross-site",
     }),
-    await signUpWith(fromOriginOnly, { origin: "https://evil.example" }),
+    await signUpWith(fromSibling, {
+      origin: "https://blog.velve.dev",
+      "sec-fetch-site": "same-site",
+    }),
     await signUpWith(visitor, { origin: new URL(baseURL!).origin }),
   ];
   for (const answer of answers) {
@@ -42,5 +45,5 @@ test("sign-ups sent from another site get the normal answer and no mail", async 
   }
   await waitForMail(visitor, "Confirm your spot on the Velve waitlist");
   expect(await mailsTo(fromFetchMetadata)).toEqual([]);
-  expect(await mailsTo(fromOriginOnly)).toEqual([]);
+  expect(await mailsTo(fromSibling)).toEqual([]);
 });

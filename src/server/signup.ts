@@ -34,20 +34,9 @@ function looksAutomated(fields: SignupFields, services: Services, now: number): 
   return now - issuedAt < services.config.limits.minFormSeconds * 1000 || issuedAt > now;
 }
 
-function originHost(origin: string): string | null {
-  try {
-    return new URL(origin).host;
-  } catch {
-    return null;
-  }
-}
-
 function isCrossSite(headers: Headers): boolean {
   const fetchSite = headers.get("sec-fetch-site");
-  if (fetchSite !== null) return fetchSite !== "same-origin";
-  const origin = headers.get("origin");
-  if (origin === null) return false;
-  return originHost(origin) !== headers.get("host")?.toLowerCase();
+  return fetchSite !== null && fetchSite !== "same-origin";
 }
 
 export async function handleSignup(request: Request, services: Services): Promise<Response> {
