@@ -162,3 +162,13 @@ Actions, npm packages and the Node base image in `Dockerfile.dokploy` are pinned
 Commits and pull request titles start with `build(deps):` for npm and Docker and `ci(deps):` for actions, because the repository allows only the Conventional Commit types listed in `CLAUDE.md`. An npm update that touches only development dependencies reads `build(deps-dev):`, since Dependabot sets the scope itself. A new Node base image also needs `.nvmrc` and `engines.node` moved in the same pull request. Dependabot changes only `Dockerfile.dokploy`, and pnpm 12 no longer reads `engine-strict` from `.npmrc`, so the image would build on the new version anyway. `tests/unit/node-version.test.ts` compares the three, and the verify job in CI shows the mismatch.
 
 Dependabot's commits are authored by the Dependabot bot, not by the owner's identity, and their body carries Dependabot's metadata, with lines like `updated-dependencies:` and a sign-off line. The owner accepts this when merging such pull requests through GitHub. The identity and trailer rules govern commits made by people and agents in this repository, and Dependabot's commits pass the same CI before they are merged.
+
+## ADR 24: Run on Node 26.12.1
+
+**Status:** accepted, 2026-10-25, extends ADR 22
+
+The owner chose Node 26.12.1 for local work, CI and the image, although Node 24 is the LTS line in maintenance and Node 26 only becomes Active LTS on 2026-10-28. `.nvmrc`, `engines.node` and all three stages of `Dockerfile.dokploy` name the same release, and the base image stays pinned by its digest.
+
+The official Node images from Node 25 on ship without corepack, so `corepack enable` no longer works in the image. Each stage that runs pnpm now copies `package.json` first and installs pnpm with `npm install --global --ignore-scripts` from the `packageManager` field, which stays the only place that names the pnpm version. npm picks the native pnpm binary for musl as an optional dependency, and the wrapper runs it without install scripts. The runtime stage installs nothing. `tests/unit/dockerfile.test.ts` fails when the image uses corepack, names a pnpm version of its own or pulls a base image without a digest.
+
+`@types/node` follows the runtime major, so it moves to the newest 26.x release with the runtime.
