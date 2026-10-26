@@ -62,7 +62,7 @@ export const config = {
   matcher: [
     {
       source:
-        "/((?!_next/static|_next/image|email/|icon.svg|apple-icon.png|opengraph-image.png).*)",
+        "/((?!_next/static(?:/|$)|_next/image(?:/|$)|email(?:/|$)|icon\\.svg$|apple-icon\\.png$|opengraph-image\\.png$).*)",
     },
   ],
 };

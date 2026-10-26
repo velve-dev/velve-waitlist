@@ -1,5 +1,7 @@
+import { tryToParsePath } from "next/dist/lib/try-to-parse-path";
 import { NextRequest } from "next/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { config } from "@/proxy";
 import { testEnv } from "../support/services";
 
 async function loadProxy(env: Record<string, string> = {}) {
@@ -53,6 +55,54 @@ describe("analytics relay limit", () => {
     for (const path of ["/", "/stats/script.js", "/api/subscribe", "/confirm/broken"]) {
       const method = path === "/api/subscribe" ? "POST" : "GET";
       expect(proxy(requestFrom("198.51.100.63", path, method)).status, path).toBe(200);
+    }
+  });
+});
+
+describe("proxy matcher", () => {
+  const parsed = config.matcher.map(({ source }) => tryToParsePath(source));
+  const patterns = parsed.map(({ regexStr }) => new RegExp(regexStr ?? "^$"));
+  const runsProxy = (path: string) => patterns.some((pattern) => pattern.test(path));
+
+  it("compiles with the path-to-regexp of the installed Next.js", () => {
+    for (const { route, error, regexStr } of parsed) {
+      expect(error, route).toBeUndefined();
+      expect(regexStr, route).toMatch(/^\^/);
+    }
+  });
+
+  it("skips exactly the static assets that next.config.ts secures", () => {
+    for (const path of [
+      "/_next/static/chunks/main.js",
+      "/_next/static/missing.js",
+      "/_next/image",
+      "/email/logo-mark.png",
+      "/icon.svg",
+      "/apple-icon.png",
+      "/opengraph-image.png",
+    ]) {
+      expect(runsProxy(path), path).toBe(false);
+    }
+  });
+
+  it("runs on every other path, including look-alikes of the assets", () => {
+    for (const path of [
+      "/",
+      "/imprint",
+      "/api/subscribe",
+      "/stats/api/send",
+      "/icon.svgx",
+      "/icon.svg.html",
+      "/iconXsvg",
+      "/apple-icon.pngfoo",
+      "/apple-iconXpng",
+      "/opengraph-image.png/x",
+      "/_next/staticfoo",
+      "/_next/imagex",
+      "/emailx",
+      "/email.html",
+    ]) {
+      expect(runsProxy(path), path).toBe(true);
     }
   });
 });
