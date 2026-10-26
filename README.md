@@ -8,7 +8,7 @@
 
 <p align="center">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue"></a>
-  <img alt="Node 24" src="https://img.shields.io/badge/node-24-339933?logo=nodedotjs&amp;logoColor=white">
+  <img alt="Node 26" src="https://img.shields.io/badge/node-26-339933?logo=nodedotjs&amp;logoColor=white">
   <img alt="pnpm" src="https://img.shields.io/badge/pnpm-12-F69220?logo=pnpm&amp;logoColor=white">
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&amp;logoColor=white">
   <img alt="Next.js 16" src="https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&amp;logoColor=white">
