@@ -34,6 +34,11 @@ function looksAutomated(fields: SignupFields, services: Services, now: number): 
   return now - issuedAt < services.config.limits.minFormSeconds * 1000 || issuedAt > now;
 }
 
+function isCrossSite(headers: Headers): boolean {
+  const fetchSite = headers.get("sec-fetch-site");
+  return fetchSite !== null && fetchSite !== "same-origin";
+}
+
 export async function handleSignup(request: Request, services: Services): Promise<Response> {
   const now = services.now();
   const { config } = services;
@@ -55,6 +60,11 @@ export async function handleSignup(request: Request, services: Services): Promis
   if (fields === null) return jsonResponse(400, { error: "missing" });
   const problem = findEmailProblem(fields.email);
   if (problem !== null) return jsonResponse(400, { error: problem });
+
+  if (isCrossSite(request.headers)) {
+    logEvent("signup_suppressed", "cross_site");
+    return accepted();
+  }
 
   if (looksAutomated(fields, services, now)) {
     logEvent("signup_suppressed", "bot_check");

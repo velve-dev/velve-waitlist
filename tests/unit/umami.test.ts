@@ -98,3 +98,72 @@ describe("umami relay", () => {
     expect((await relayEvent(request)).status).toBe(413);
   });
 });
+
+describe("umami relay with a reachable Umami", () => {
+  beforeEach(() => {
+    process.env.UMAMI_URL = "http://umami.internal";
+    process.env.UMAMI_WEBSITE_ID = "velve-site";
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  function pageView(website: unknown) {
+    return new Request("https://velve.test/stats/api/send", {
+      method: "POST",
+      body: JSON.stringify({ type: "event", payload: { website, url: "/" } }),
+    });
+  }
+
+  function upstreamAnswers(body: string, status: number) {
+    return vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(
+        new Response(body, { status, headers: { "content-type": "text/plain; charset=utf-8" } }),
+      );
+  }
+
+  it("refuses events for every website but ours without contacting Umami", async () => {
+    const upstream = upstreamAnswers('{"cache":"c"}', 200);
+    for (const website of ["another-site", "", undefined, 42, "VELVE-SITE", " velve-site"]) {
+      expect((await relayEvent(pageView(website))).status, String(website)).toBe(400);
+    }
+    expect(upstream).not.toHaveBeenCalled();
+  });
+
+  it("passes a successful Umami answer through unchanged", async () => {
+    const upstream = upstreamAnswers('{"cache":"session-cache"}', 200);
+    const response = await relayEvent(pageView("velve-site"));
+    expect(upstream).toHaveBeenCalledOnce();
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe('{"cache":"session-cache"}');
+    expect(response.headers.get("cache-control")).toBe("no-store");
+  });
+
+  it("hides what Umami says when it refuses an event", async () => {
+    for (const status of [400, 403, 404, 429, 500, 503]) {
+      upstreamAnswers(`upstream detail ${status} from db-01.internal`, status);
+      const lines: string[] = [];
+      const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk) => {
+        lines.push(String(chunk));
+        return true;
+      });
+      let response: Response;
+      try {
+        response = await relayEvent(pageView("velve-site"));
+      } finally {
+        spy.mockRestore();
+      }
+      expect(response.status, String(status)).toBe(502);
+      expect(await response.text(), String(status)).toBe("");
+      expect(response.headers.get("cache-control")).toBe("no-store");
+      const output = lines.join("");
+      expect(output).not.toContain("db-01");
+      expect((JSON.parse(output.trim()) as { event: string; code: string }).code).toBe(
+        "analytics_send_rejected",
+      );
+      vi.restoreAllMocks();
+    }
+  });
+});

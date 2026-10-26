@@ -8,21 +8,21 @@ A visitor leaves an email address and, if they like, a first name. Nothing is st
 
 ## Where things are
 
-| Path              | What it holds                                                                 |
-| ----------------- | ----------------------------------------------------------------------------- |
-| `src/app/`        | Pages and API routes. The App Router maps folders to URLs.                    |
-| `src/components/` | The page shell, form, notices and message pages.                              |
-| `src/content/`    | Every user-facing string (`copy.ts`) and the legal texts (`legal.ts`).        |
-| `src/lib/`        | Code shared by browser and server: email checks, name cleaning, analytics.    |
-| `src/server/`     | Server-only code: configuration, tokens, limits, the Brevo client, the flows. |
-| `src/proxy.ts`    | Runs before every request: security headers, nonce, link rate limits.         |
-| `emails/`         | Mail copy, the table layout, and the generated Brevo update template.         |
-| `scripts/`        | The custom gates and asset rendering.                                         |
-| `tests/`          | Vitest unit tests, Playwright end-to-end tests and the Brevo mock.            |
+| Path              | What it holds                                                                  |
+| ----------------- | ------------------------------------------------------------------------------ |
+| `src/app/`        | Pages and API routes. The App Router maps folders to URLs.                     |
+| `src/components/` | The page shell, form, notices and message pages.                               |
+| `src/content/`    | Every user-facing string (`copy.ts`) and the legal texts (`legal.ts`).         |
+| `src/lib/`        | Code shared by browser and server: email checks, name cleaning, analytics.     |
+| `src/server/`     | Server-only code: configuration, tokens, limits, the Brevo client, the flows.  |
+| `src/proxy.ts`    | Runs before every request: security headers, nonce, link and analytics limits. |
+| `emails/`         | Mail copy, the table layout, and the generated Brevo update template.          |
+| `scripts/`        | The custom gates and asset rendering.                                          |
+| `tests/`          | Vitest unit tests, Playwright end-to-end tests and the Brevo mock.             |
 
 ## Signing up
 
-The page is rendered per request because it embeds two things: a fresh CSP nonce and a sealed form token holding the render time. When someone submits, `POST /api/subscribe` first checks the daily send cap, then the per-network limit, then the address. Bots that fill the hidden `website` field, submit faster than `MIN_FORM_SECONDS` or send no valid form token get the normal success answer and no mail. So does the second sign-up for the same mailbox within `CONFIRM_MAIL_INTERVAL_SECONDS`, where plus tags and Gmail dots count as the same mailbox. The confirmation mail goes out after the response, so every outcome answers in the same time.
+The page is rendered per request because it embeds two things: a fresh CSP nonce and a sealed form token holding the render time. When someone submits, `POST /api/subscribe` first checks the daily send cap, then the per-network limit, then the address. Sign-ups that another site's page sends from a visitor's browser, recognised by a `Sec-Fetch-Site` header other than `same-origin`, get the normal success answer and no mail. So do bots that fill the hidden `website` field, submit faster than `MIN_FORM_SECONDS` or send no valid form token, and so does the second sign-up for the same mailbox within `CONFIRM_MAIL_INTERVAL_SECONDS`, where plus tags and Gmail dots count as the same mailbox. The confirmation mail goes out after the response, so every outcome answers in the same time.
 
 ## Confirming
 
@@ -34,13 +34,13 @@ The welcome mail links to `/unsubscribe/<token>`, which asks once and then delet
 
 ## Protection
 
-Limits apply at three levels in the app: per network for sign-ups, per mailbox for confirmation mails, and per day for all mails together. The client address comes from `X-Real-IP`, which Scaleway sets. Link and webhook routes have their own per-network limits in the proxy. Network keys are HMACs of the client address with a salt that changes every UTC day, and IPv6 addresses count per /64. Raw addresses, names, emails and tokens are never stored or logged. The logs only carry event names and stable codes.
+Limits apply at three levels in the app: per network for sign-ups, per mailbox for confirmation mails, and per day for all mails together. The client address comes from `X-Real-IP`, which Scaleway sets. Link, webhook and analytics routes have their own per-network limits in the proxy. Network keys are HMACs of the client address with a salt that changes every UTC day, and IPv6 addresses count per /64. Raw addresses, names, emails and tokens are never stored or logged. The logs only carry event names and stable codes.
 
-Every page gets a nonce-based content security policy without `unsafe-inline`, and the end-to-end suite fails on any request to another origin, any cookie, any browser storage and any policy violation.
+Every page gets a nonce-based content security policy without `unsafe-inline`, and so does every path that only looks like a static asset. The end-to-end suite fails on any request to another origin, any cookie, any browser storage and any policy violation.
 
 ## Analytics
 
-Umami runs on Scaleway as well, operated by Levo Studio, and the server reaches it over HTTPS. The browser loads `/stats/script.js` and posts to `/stats/api/send` on our own origin, and the server relays to Umami without the client address. Automatic tracking is off: the page sends page views with token paths reduced to `/confirm` and `/unsubscribe`, plus the events `signup_submitted` and `signup_confirmed`, without properties. The relay refuses anything else.
+Umami runs on Scaleway as well, operated by Levo Studio, and the server reaches it over HTTPS. The browser loads `/stats/script.js` and posts to `/stats/api/send` on our own origin, and the server relays to Umami without the client address. Automatic tracking is off: the page sends page views with token paths reduced to `/confirm` and `/unsubscribe`, plus the events `signup_submitted` and `signup_confirmed`, without properties. The relay refuses anything else, including events for any other Umami website, limits each network to `ANALYTICS_LIMIT_PER_IP` events per window, and never passes an error from Umami on to the browser.
 
 ## Mails
 
