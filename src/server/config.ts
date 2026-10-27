@@ -27,6 +27,8 @@ export type Config = {
     linkWindowSeconds: number;
     webhookRequestsPerIp: number;
     webhookWindowSeconds: number;
+    analyticsRequestsPerIp: number;
+    analyticsWindowSeconds: number;
     confirmTokenTtlSeconds: number;
   };
   umami: { url: string; websiteId: string } | null;
@@ -111,6 +113,8 @@ export function readConfig(env: Env): Config {
       linkWindowSeconds: positiveNumber("LINK_LIMIT_WINDOW_SECONDS", 600),
       webhookRequestsPerIp: positiveNumber("WEBHOOK_LIMIT_PER_IP", 300),
       webhookWindowSeconds: positiveNumber("WEBHOOK_LIMIT_WINDOW_SECONDS", 60),
+      analyticsRequestsPerIp: positiveNumber("ANALYTICS_LIMIT_PER_IP", 60),
+      analyticsWindowSeconds: positiveNumber("ANALYTICS_LIMIT_WINDOW_SECONDS", 60),
       confirmTokenTtlSeconds: positiveNumber("CONFIRM_TOKEN_TTL_SECONDS", 604_800),
     },
     umami: readUmami(env),

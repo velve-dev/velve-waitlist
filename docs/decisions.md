@@ -152,3 +152,37 @@ Scaleway has no per-address rate limit in front of a container, so the Traefik l
 **Status:** accepted, 2026-10-24, supersedes the hosting and logs points of ADR 17
 
 The waitlist and Umami now run on Scaleway (ADR 20), so the privacy policy no longer names Hetzner, Datalix and Virtbase. It names Scaleway SAS, 8 rue de la Ville-l'Évêque, 75008 Paris, France, as the provider under a data processing agreement, with the Amsterdam region, and says that Umami runs on the same infrastructure. The sentence on logs now says they stay with the hosting provider in the EU instead of on our own servers, because Scaleway Cockpit keeps the container output. The address comes from Scaleway's legal notice. The date line moves to 24 Oct 2026. The owner asked for the change and approves the wording by merging.
+
+## ADR 22: Dependabot proposes weekly dependency updates
+
+**Status:** accepted, 2026-10-25
+
+Actions, npm packages and the Node base image in `Dockerfile.dokploy` are pinned to exact versions and digests, so they only move when someone bumps them. `.github/dependabot.yml` lets Dependabot check all three once a week from the repository root. Minor and patch updates of each ecosystem arrive together in one pull request, and every major update arrives in its own, so a breaking change can be read and tested on its own. Dependabot finds `Dockerfile.dokploy` by itself, because it reads every file in the directory whose name contains `Dockerfile`.
+
+Commits and pull request titles start with `build(deps):` for npm and Docker and `ci(deps):` for actions, because the repository allows only the Conventional Commit types listed in `CLAUDE.md`. An npm update that touches only development dependencies reads `build(deps-dev):`, since Dependabot sets the scope itself. A new Node base image also needs `.nvmrc` and `engines.node` moved in the same pull request. Dependabot changes only `Dockerfile.dokploy`, and pnpm 12 no longer reads `engine-strict` from `.npmrc`, so the image would build on the new version anyway. `tests/unit/node-version.test.ts` compares the three, and the verify job in CI shows the mismatch.
+
+Dependabot's commits are authored by the Dependabot bot, not by the owner's identity, and their body carries Dependabot's metadata, with lines like `updated-dependencies:` and a sign-off line. The owner accepts this when merging such pull requests through GitHub. The identity and trailer rules govern commits made by people and agents in this repository, and Dependabot's commits pass the same CI before they are merged.
+
+## ADR 23: Close the open relay, the unanchored matcher and cross-site sign-ups
+
+**Status:** accepted, 2026-10-26, extends ADR 4, 5, 10, 11 and 13
+
+A security audit found three gaps. None of the fixes changes what a visitor sees.
+
+The Umami relay from ADR 10 forwarded events for any website ID, so any website on the Levo Studio Umami instance could be filled with events through velve.dev. It had no limit, and it passed Umami's status and body through to the browser, so upstream error text could reach a visitor. The relay now refuses, with the same 400 as other refused events, every event whose `website` is not `UMAMI_WEBSITE_ID`. The tracker takes that value from the `data-website-id` attribute the layout renders from the same setting, so real page views and the two events always match. The proxy counts `/stats/api/send` per network like the routes in ADR 11, with `ANALYTICS_LIMIT_PER_IP` (default 60) and `ANALYTICS_LIMIT_WINDOW_SECONDS` (default 60). A visitor sends one page view per page and at most two events, so only scripts reach the limit. The 429 carries the same plain-text sentence as the link limit, which the tracker ignores, because it only reads a successful answer. When Umami answers with anything but 2xx, the relay returns an empty 502 and logs `analytics_send_rejected`. A successful answer still passes through unchanged, because the tracker reads its session cache from it.
+
+The proxy matcher excluded the static assets by prefix, so `/icon.svgx`, `/apple-icon.pngfoo`, `/opengraph-image.png/x`, `/_next/staticfoo` and similar paths skipped both the proxy and the asset headers in `next.config.ts`. They rendered the 404 page without a content security policy, `X-Frame-Options`, HSTS, `Referrer-Policy`, `nosniff` or `X-Robots-Tag`, against ADR 13. The exclusions are now anchored and match the sources in `next.config.ts` exactly: `/_next/static`, `/_next/image` and `/email` with what lies below them, and `/icon.svg`, `/apple-icon.png` and `/opengraph-image.png` by their full name. Every path is therefore covered by either the proxy or `next.config.ts`. A unit test compiles the matcher with the path-to-regexp of the installed Next.js, and the end-to-end suite checks the headers on look-alike paths and on the real assets.
+
+The sign-up endpoint read `text/plain` bodies from any origin, and a form token can be used more than once, so a foreign page could make its visitors' browsers sign up arbitrary addresses from many networks. That would send our confirmation mail to people who never asked and drain `DAILY_SEND_CAP`. A sign-up now counts as cross-site when `Sec-Fetch-Site` is present and not `same-origin`. A browser cannot forge that header for a request a foreign page starts, and the form posts to its own host, so a visitor on `velve.dev` or `www.velve.dev` always sends `same-origin`. Nothing is compared against `SITE_URL`, because the site answers on both hosts. There is no fallback that compares `Origin` with `Host`: it is not verified that Scaleway passes the visitor's `Host` through on custom domains, and a rewritten `Host` would silently drop real sign-ups from browsers that do not send `Sec-Fetch-Site`. Those older browsers keep the previous protection only, and requests without the header, such as scripts, are handled as before and stay under the existing limits.
+
+A cross-site sign-up is suppressed silently, like a honeypot hit in ADR 5: after the cap, the network limit and the address check, it gets the normal success answer in the same time, sends no mail, takes nothing from the daily cap or the mailbox interval, and logs `signup_suppressed` with the code `cross_site` only. An error answer would tell a script which of its requests were caught, and the real person behind the address must still be able to sign up from our page. Like every suppressed request, it still counts against the sender's network limit.
+
+## ADR 24: Run on Node 26.12.1
+
+**Status:** accepted, 2026-10-25, extends ADR 22
+
+The owner chose Node 26.12.1 for local work, CI and the image, although Node 24 is the LTS line in maintenance and Node 26 only becomes Active LTS on 2026-10-28. `.nvmrc`, `engines.node` and all three stages of `Dockerfile.dokploy` name the same release, and the base image stays pinned by its digest.
+
+The official Node images from Node 25 on ship without corepack, so `corepack enable` no longer works in the image. Each stage that runs pnpm now copies `package.json` first and installs pnpm with `npm install --global --ignore-scripts` from the `packageManager` field, which stays the only place that names the pnpm version. npm picks the native pnpm binary for musl as an optional dependency, and the wrapper runs it without install scripts. The runtime stage installs nothing. `tests/unit/dockerfile.test.ts` fails when the image uses corepack, names a pnpm version of its own or pulls a base image without a digest.
+
+`@types/node` follows the runtime major, so it moves to the newest 26.x release with the runtime.

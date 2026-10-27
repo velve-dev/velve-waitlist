@@ -1,16 +1,17 @@
-// Applies per-network limits to link and webhook routes.
+// Applies per-network limits to link, webhook and analytics routes.
 import "server-only";
 import { clientNetwork } from "./client-ip";
 import type { Config } from "./config";
 import { logEvent } from "./log";
 import { anonymousKey, WindowLimiter, type LimitDecision } from "./rate-limit";
 
-type LimitedGroup = "links" | "webhook";
+type LimitedGroup = "links" | "webhook" | "analytics";
 
 const limiters = new Map<LimitedGroup, WindowLimiter>();
 
 export function limitedGroupFor(pathname: string): LimitedGroup | null {
   if (pathname.startsWith("/api/webhooks/")) return "webhook";
+  if (pathname === "/stats/api/send") return "analytics";
   if (
     pathname.startsWith("/confirm/") ||
     pathname.startsWith("/unsubscribe/") ||
@@ -21,14 +22,22 @@ export function limitedGroupFor(pathname: string): LimitedGroup | null {
   return null;
 }
 
+function groupLimit(group: LimitedGroup, { limits }: Config): [number, number] {
+  switch (group) {
+    case "links":
+      return [limits.linkRequestsPerIp, limits.linkWindowSeconds];
+    case "webhook":
+      return [limits.webhookRequestsPerIp, limits.webhookWindowSeconds];
+    case "analytics":
+      return [limits.analyticsRequestsPerIp, limits.analyticsWindowSeconds];
+  }
+}
+
 function limiterFor(group: LimitedGroup, config: Config): WindowLimiter {
   const existing = limiters.get(group);
   if (existing !== undefined) return existing;
-  const { limits } = config;
-  const limiter =
-    group === "links"
-      ? new WindowLimiter(limits.linkRequestsPerIp, limits.linkWindowSeconds * 1000)
-      : new WindowLimiter(limits.webhookRequestsPerIp, limits.webhookWindowSeconds * 1000);
+  const [requests, windowSeconds] = groupLimit(group, config);
+  const limiter = new WindowLimiter(requests, windowSeconds * 1000);
   limiters.set(group, limiter);
   return limiter;
 }

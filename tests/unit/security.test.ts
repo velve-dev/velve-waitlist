@@ -104,6 +104,8 @@ describe("configuration", () => {
       linkWindowSeconds: 600,
       webhookRequestsPerIp: 300,
       webhookWindowSeconds: 60,
+      analyticsRequestsPerIp: 60,
+      analyticsWindowSeconds: 60,
       confirmTokenTtlSeconds: 604_800,
     });
     expect(config.siteIndexable).toBe(false);

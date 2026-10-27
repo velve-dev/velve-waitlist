@@ -1,9 +1,10 @@
 // The repository checks must fail on planted problems.
-import { execFileSync, spawnSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { sandboxEnv, sandboxGit } from "../support/sandbox-git";
 
 const repoRoot = path.resolve(import.meta.dirname, "../..");
 const sandboxes: string[] = [];
@@ -20,13 +21,13 @@ function sandbox(files: Record<string, string>): string {
     mkdirSync(path.dirname(path.join(directory, file)), { recursive: true });
     writeFileSync(path.join(directory, file), content);
   }
-  execFileSync("git", ["init", "-q"], { cwd: directory });
+  sandboxGit(directory, "init", "-q");
   return directory;
 }
 
 function runCheck(script: string, root: string) {
   const result = spawnSync(process.execPath, [path.join(repoRoot, "scripts", script)], {
-    env: { ...process.env, CHECK_ROOT: root },
+    env: sandboxEnv({ CHECK_ROOT: root }),
     encoding: "utf8",
   });
   return { status: result.status, output: result.stdout + result.stderr };
@@ -153,8 +154,7 @@ describe("pre-push hook", () => {
 
   function pushCommitWithBody(body: string) {
     const root = sandbox({ "a.txt": "a\n" });
-    const git = (...args: string[]) =>
-      execFileSync("git", args, { cwd: root, encoding: "utf8" }).trim();
+    const git = (...args: string[]) => sandboxGit(root, ...args);
     git("config", "velve.identity", identity);
     git("config", "user.name", "Hook Test");
     git("config", "user.email", "hook@example.invalid");
@@ -163,6 +163,7 @@ describe("pre-push hook", () => {
     const sha = git("rev-parse", "HEAD");
     const result = spawnSync("sh", [path.join(repoRoot, ".githooks/pre-push")], {
       cwd: root,
+      env: sandboxEnv(),
       input: `refs/heads/main ${sha} refs/heads/main ${"0".repeat(40)}\n`,
       encoding: "utf8",
     });
@@ -185,7 +186,7 @@ describe("pre-push hook", () => {
 describe("legal check", () => {
   function runLegal(root: string, indexable: string) {
     return spawnSync(process.execPath, [path.join(repoRoot, "scripts/check-legal.ts")], {
-      env: { ...process.env, CHECK_ROOT: root, SITE_INDEXABLE: indexable },
+      env: sandboxEnv({ CHECK_ROOT: root, SITE_INDEXABLE: indexable }),
       encoding: "utf8",
     }).status;
   }
